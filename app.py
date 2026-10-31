@@ -12,13 +12,13 @@ st.set_page_config(
     layout="wide"
 )
 
-# Thư mục lưu trữ dữ liệu tải lên cục bộ
+# Thư mục lưu trữ dữ liệu
 DATA_DIR = "uploaded_data"
 CSDL_DIR = "csdl_tong_hop"
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(CSDL_DIR, exist_ok=True)
 
-# 2. Khởi tạo phiên làm việc (Session State) cho tài khoản
+# 2. Quản lý trạng thái phiên đăng nhập và dữ liệu hệ thống (Giữ lại trạng thái khi F5)
 if "users_db" not in st.session_state:
     st.session_state.users_db = {
         "duongpv2": {"pass": "admin123", "role": "admin", "name": "Phạm Văn Dương"},
@@ -31,14 +31,17 @@ if "logged_in" not in st.session_state:
     st.session_state.role = ""
     st.session_state.name = ""
 
-if "show_change_pass_modal" not in st.session_state:
-    st.session_state.show_change_pass_modal = False
+if "current_page" not in st.session_state:
+    st.session_state.current_page = "📊 Dashboard"
 
-# 3. CSS Tùy chỉnh giao diện (Tone đỏ Viettel chủ đạo & tối ưu không gian)
+if "action_view" not in st.session_state:
+    st.session_state.action_view = "normal"  # 'normal', 'change_pass'
+
+# 3. CSS Tùy chỉnh giao diện (Tone đỏ Viettel chủ đạo, tối giản, sang trọng)
 st.markdown("""
     <style>
     .block-container {
-        padding-top: 0.8rem !important;
+        padding-top: 0.6rem !important;
         padding-bottom: 2rem !important;
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
@@ -48,18 +51,6 @@ st.markdown("""
     }
     .stApp {
         background-color: #f8f9fa;
-    }
-    /* Header chính */
-    .header-container {
-        background: linear-gradient(90deg, #d90429 0%, #ef233c 100%);
-        padding: 12px 20px;
-        border-radius: 8px;
-        color: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-        box-shadow: 0 4px 10px rgba(217, 4, 4, 0.2);
     }
     /* Thẻ KPI */
     [data-testid="stMetric"] {
@@ -74,6 +65,7 @@ st.markdown("""
     .stButton button[kind="primary"] {
         background-color: #d90429 !important;
         border-color: #d90429 !important;
+        color: white !important;
     }
     .stButton button[kind="primary"]:hover {
         background-color: #b50322 !important;
@@ -88,13 +80,15 @@ if not st.session_state.logged_in:
     st.markdown("<br><br>", unsafe_allow_html=True)
     col_l1, col_l2, col_l3 = st.columns([1, 1.2, 1])
     with col_l2:
+        # Nhận diện thương hiệu Viettel Construction chuẩn Wordmark tối giản
         st.markdown("""
             <div style="text-align: center; margin-bottom: 20px;">
-                <div style="background-color: #d90429; color: white; display: inline-block; padding: 10px 20px; border-radius: 8px; font-weight: 900; font-size: 20px; letter-spacing: 0.5px; margin-bottom: 10px;">
-                    viettel <span style="font-size: 12px; display: block; font-weight: 400; opacity: 0.9;">construction</span>
+                <div style="display: inline-block; text-align: left; background: #fff; padding: 15px 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(217, 4, 4, 0.1); border-top: 4px solid #d90429;">
+                    <span style="font-family: sans-serif; font-size: 26px; font-weight: 900; color: #d90429; letter-spacing: -0.5px;">viettel</span>
+                    <span style="font-family: sans-serif; font-size: 15px; font-weight: 600; color: #212529; display: block; letter-spacing: 0.5px; margin-top: -4px;">construction</span>
                 </div>
-                <h3 style="color: #d90429; font-weight: 800; margin: 5px 0 0 0;">P.VHKT - CNCTHNI</h3>
-                <p style="color: #555; font-size: 13px; font-weight: 500;">HỆ THỐNG ĐIỀU HÀNH & QUẢN LÝ CSDL</p>
+                <h4 style="color: #d90429; font-weight: 800; margin: 15px 0 2px 0;">P.VHKT - CNCTHNI</h4>
+                <p style="color: #6c757d; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Hệ thống Điều hành & Quản lý CSDL</p>
             </div>
         """, unsafe_allow_html=True)
         
@@ -126,91 +120,105 @@ if not st.session_state.logged_in:
     st.stop()
 
 # ==========================================
-# GIAO DIỆN CHÍNH (3 VÙNG)
+# GIAO DIỆN CHÍNH (3 VÙNG CHUẨN DOANH NGHIỆP)
 # ==========================================
 
-# --- VÙNG 1: HEADER (Logo thiết kế riêng, Tiêu đề, Giờ thực tế, Popup Menu tài khoản) ---
+# --- VÙNG 1: HEADER (Logo Viettel Construction, Tên đơn vị, Giờ thực tế, Quản lý tài khoản) ---
 current_time_str = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
 col_h1, col_h2, col_h3 = st.columns([2.5, 2, 1.5])
 with col_h1:
-    # Logo thiết kế thuần CSS chuyên nghiệp (không dùng ảnh ngoài tránh lỗi)
-    st.markdown(f"""
+    # Logo Wordmark tinh tế, hiện đại bằng HTML/CSS
+    st.markdown("""
         <div style="display: flex; align-items: center; gap: 12px; padding-top: 2px;">
-            <div style="background-color: #d90429; color: white; padding: 6px 12px; border-radius: 6px; font-weight: 900; font-size: 15px; letter-spacing: 0.5px; line-height: 1.1;">
-                viettel <span style="font-size: 10px; display: block; font-weight: 400; opacity: 0.95;">construction</span>
+            <div style="line-height: 1.1;">
+                <span style="font-family: sans-serif; font-size: 20px; font-weight: 900; color: #d90429; letter-spacing: -0.5px;">viettel</span>
+                <span style="font-family: sans-serif; font-size: 11px; font-weight: 600; color: #212529; display: block; letter-spacing: 0.5px;">construction</span>
             </div>
-            <div>
-                <p style="color: #d90429; font-size: 15px; font-weight: 800; margin: 0;">P.VHKT - CNCTHNI</p>
-                <span style="color: #444; font-size: 12px; font-weight: 600;">Điều hành WO & Quản lý CSDL</span>
+            <div style="border-left: 2px solid #dee2e6; padding-left: 12px;">
+                <p style="color: #d90429; font-size: 14px; font-weight: 800; margin: 0;">P.VHKT - CNCTHNI</p>
+                <span style="color: #555; font-size: 11px; font-weight: 600;">Điều hành WO & Quản lý CSDL</span>
             </div>
         </div>
     """, unsafe_allow_html=True)
 
 with col_h2:
     st.markdown(f"""
-        <div style="text-align: center; padding-top: 8px;">
-            <div style="font-size: 13px; color: #333; background: #e9ecef; padding: 4px 10px; border-radius: 6px; display: inline-block; font-weight: 600;">
+        <div style="text-align: center; padding-top: 6px;">
+            <div style="font-size: 12px; color: #333; background: #e9ecef; padding: 4px 12px; border-radius: 6px; display: inline-block; font-weight: 600;">
                 📅 {current_time_str}
             </div>
         </div>
     """, unsafe_allow_html=True)
 
 with col_h3:
-    # Menu tài khoản thông minh dạng Popover gọn gàng
     role_label = "ADMIN" if st.session_state.role == "admin" else "USER"
     with st.popover(f"👤 {st.session_state.name} ({role_label})", use_container_width=True):
         st.markdown(f"**Tài khoản:** `{st.session_state.username}`")
-        st.markdown(f"**Vai trò:** `{role_label}`")
+        st.markdown(f"**Phân quyền:** `{role_label}`")
         st.markdown("---")
         if st.button("🔐 Đổi mật khẩu cá nhân", use_container_width=True):
-            st.session_state.show_change_pass_modal = True
+            st.session_state.action_view = "change_pass"
             st.rerun()
         if st.button("🚪 Đăng xuất hệ thống", use_container_width=True, type="primary"):
             st.session_state.logged_in = False
+            st.session_state.username = ""
+            st.session_state.role = ""
+            st.session_state.action_view = "normal"
             st.rerun()
 
-# Modal / Khung đổi mật khẩu khi được kích hoạt từ Popover
-if st.session_state.show_change_pass_modal:
-    with st.expander("🔐 Hộp thoại đổi mật khẩu tài khoản", expanded=True):
-        with st.form("modal_change_pass"):
-            old_p = st.text_input("Mật khẩu cũ", type="password")
-            new_p = st.text_input("Mật khẩu mới", type="password")
-            confirm_p = st.text_input("Xác nhận mật khẩu mới", type="password")
-            c_sub1, c_sub2 = st.columns(2)
-            btn_up_pass = c_sub1.form_submit_button("Xác nhận đổi", type="primary")
-            btn_cancel = c_sub2.form_submit_button("Đóng")
-            
-            if btn_up_pass:
-                cur_user = st.session_state.username
-                if old_p == st.session_state.users_db[cur_user]["pass"]:
-                    if new_p and new_p == confirm_p:
-                        st.session_state.users_db[cur_user]["pass"] = new_p
-                        st.success("Đổi mật khẩu thành công!")
-                        st.session_state.show_change_pass_modal = False
-                    else:
-                        st.error("Mật khẩu mới không khớp hoặc trống.")
-                else:
-                    st.error("Mật khẩu cũ không chính xác.")
-            if btn_cancel:
-                st.session_state.show_change_pass_modal = False
-                st.rerun()
-
 st.divider()
+
+# Xử lý giao diện đổi mật khẩu khi người dùng bấm vào
+if st.session_state.action_view == "change_pass":
+    st.markdown("### 🔐 Thay đổi mật khẩu tài khoản")
+    with st.form("form_change_password"):
+        old_p = st.text_input("Mật khẩu cũ", type="password")
+        new_p = st.text_input("Mật khẩu mới", type="password")
+        confirm_p = st.text_input("Xác nhận mật khẩu mới", type="password")
+        
+        c_sub1, c_sub2 = st.columns(2)
+        btn_update = c_sub1.form_submit_button("Xác nhận thay đổi", type="primary")
+        btn_back = c_sub2.form_submit_button("Quay lại trang chính")
+        
+        if btn_update:
+            cur_user = st.session_state.username
+            if old_p == st.session_state.users_db[cur_user]["pass"]:
+                if new_p and new_p == confirm_p:
+                    st.session_state.users_db[cur_user]["pass"] = new_p
+                    st.success("Đổi mật khẩu thành công! Vui lòng ghi nhớ mật khẩu mới.")
+                    st.session_state.action_view = "normal"
+                else:
+                    st.error("Mật khẩu mới không khớp hoặc bị để trống.")
+            else:
+                st.error("Mật khẩu cũ không chính xác.")
+        if btn_back:
+            st.session_state.action_view = "normal"
+            st.rerun()
+    st.stop()
+
 
 # --- VÙNG 2: SIDEBAR (Menu chức năng điều hướng) ---
 with st.sidebar:
     st.markdown("""
         <div style="text-align: center; padding: 10px 0; border-bottom: 2px solid #d90429; margin-bottom: 15px;">
-            <h4 style="color: #d90429; margin: 0; font-weight: 800;">QUẢN LÝ ĐIỀU HÀNH</h4>
+            <span style="font-family: sans-serif; font-size: 16px; font-weight: 900; color: #d90429;">viettel</span>
+            <span style="font-family: sans-serif; font-size: 10px; font-weight: 600; color: #212529; display: block;">construction</span>
+            <h5 style="color: #333; margin: 8px 0 0 0; font-weight: 800;">QUẢN LÝ ĐIỀU HÀNH</h5>
         </div>
     """, unsafe_allow_html=True)
     
-    menu_selection = st.radio(
+    # Sử dụng st.radio gắn liền với session_state để điều hướng mượt mà
+    menu_options = ["📊 Dashboard", "📋 Dữ liệu WO", "💰 Dữ liệu tiền phạt", "🗂️ CSDL tổng hợp"]
+    
+    selected_menu = st.radio(
         "Chọn chức năng:",
-        ["📊 Dashboard", "📋 Dữ liệu WO", "💰 Dữ liệu tiền phạt", "🗂️ CSDL tổng hợp"],
+        menu_options,
+        index=menu_options.index(st.session_state.current_page) if st.session_state.current_page in menu_options else 0,
         label_visibility="collapsed"
     )
+    st.session_state.current_page = selected_menu
+
 
 # --- HÀM HỖ TRỢ ĐỌC DỮ LIỆU ---
 @st.cache_data
@@ -232,7 +240,7 @@ df_pen_lookup = load_excel_file(penalty_lookup_path, header_row=0)
 
 # --- VÙNG 3: HIỂN THỊ NỘI DUNG THEO MỤC CHỌN Ở VÙNG 2 ---
 
-if menu_selection == "📊 Dashboard":
+if st.session_state.current_page == "📊 Dashboard":
     st.subheader("📊 Tổng Quan Chỉ Số Work Order & Tài Chính")
     
     if df_wo is not None:
@@ -280,7 +288,7 @@ if menu_selection == "📊 Dashboard":
         st.warning("⚠️ Chưa tìm thấy tệp dữ liệu `Web.xlsx`.")
 
 
-elif menu_selection == "📋 Dữ liệu WO":
+elif st.session_state.current_page == "📋 Dữ liệu WO":
     st.subheader("📋 Dashboard Tổng Hợp & Tra Cứu Dữ Liệu Work Order (Drill-Down)")
     
     if st.session_state.role == "admin":
@@ -332,7 +340,7 @@ elif menu_selection == "📋 Dữ liệu WO":
         st.warning("Chưa có dữ liệu Work Order.")
 
 
-elif menu_selection == "💰 Dữ liệu tiền phạt":
+elif st.session_state.current_page == "💰 Dữ liệu tiền phạt":
     st.subheader("💰 Quản Lý & Tra Cứu Dữ Liệu Tiền Phạt")
     
     if st.session_state.role == "admin":
@@ -372,13 +380,12 @@ elif menu_selection == "💰 Dữ liệu tiền phạt":
         st.info("Chưa có file tra cứu tiền phạt được tải lên hệ thống.")
 
 
-elif menu_selection == "🗂️ CSDL tổng hợp":
+elif st.session_state.current_page == "🗂️ CSDL tổng hợp":
     st.subheader("🗂️ Kho Lưu Trữ CSDL Tổng Hợp")
     st.caption("Quản lý tất cả các tệp cơ sở dữ liệu gốc, file tổng hợp phục vụ công tác điều hành và báo cáo.")
     
     if st.session_state.role == "admin":
-        st.markdown("#### ⚙️ [Admin] Tải lên CSDL mới vào kho lưu trữ (Chọn nhiều file cùng lúc)")
-        # Đã hỗ trợ chọn nhiều file cùng lúc bằng accept_multiple_files=True
+        st.markdown("#### ⚙️ [Admin] Tải lên CSDL mới vào kho lưu trữ (Cho phép chọn nhiều file cùng lúc)")
         up_csdl_files = st.file_uploader("Chọn một hoặc nhiều file cơ sở dữ liệu (.xlsx, .csv, .zip)", type=["xlsx", "csv", "zip", "rar"], accept_multiple_files=True, key="up_csdl_files")
         if up_csdl_files:
             for up_csdl in up_csdl_files:

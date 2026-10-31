@@ -5,7 +5,7 @@ import io
 
 # 1. Cấu hình trang
 st.set_page_config(
-    page_title="Hệ Thống Quản Lý & Điều Hành Work Order",
+    page_title="CƠ SỞ DỮ LIỆU & Điều Hành WO",
     page_icon="🔴",
     layout="wide"
 )
@@ -13,7 +13,7 @@ st.set_page_config(
 # 2. Khởi tạo danh sách tài khoản trong st.session_state (nếu chưa có)
 if "users_db" not in st.session_state:
     st.session_state.users_db = {
-        "admin": {"pass": "admin123", "role": "admin", "name": "Quản trị viên TTKV3"},
+        "admin": {"pass": "admin123", "role": "admin", "name": "Duongpv2 Quản trị viên"},
         "user": {"pass": "user123", "role": "viewer", "name": "Cán bộ / Nhân viên"}
     }
 
@@ -74,7 +74,7 @@ if not st.session_state.logged_in:
         st.markdown("""
             <div style="text-align: center; margin-bottom: 20px;">
                 <h2 style="color: #d90429; font-weight: 800; margin-bottom: 0;">VIETTEL CONSTRUCTION</h2>
-                <p style="color: #555; font-size: 14px; font-weight: 500;">HỆ THỐNG QUẢN LÝ & ĐIỀU HÀNH WORK ORDER</p>
+                <p style="color: #555; font-size: 14px; font-weight: 500;">CƠ SỞ DỮ LIỆU & Điều Hành WO</p>
             </div>
         """, unsafe_allow_html=True)
         
@@ -142,7 +142,7 @@ with st.sidebar:
         st.rerun()
 
 # Tiêu đề trang chính
-st.markdown('<div class="main-header">🔴 HỆ THỐNG QUẢN LÝ & ĐIỀU HÀNH WORK ORDER</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">🔴 CƠ SỞ DỮ LIỆU & Điều Hành WO</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Báo cáo, tra cứu dữ liệu và phân tích chỉ số chuyên sâu theo thời gian thực.</div>', unsafe_allow_html=True)
 
 # 3. Tải dữ liệu (Ưu tiên đọc Web.xlsx có sẵn)

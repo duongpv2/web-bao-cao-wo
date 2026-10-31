@@ -4,3 +4,4 @@ openpyxl
 streamlit-js-eval
 extra-streamlit-components
 python-calamine
+plotly

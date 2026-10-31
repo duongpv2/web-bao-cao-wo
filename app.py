@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import plotly.express as px
 import io
@@ -37,11 +38,11 @@ if "current_page" not in st.session_state:
 if "action_view" not in st.session_state:
     st.session_state.action_view = "normal"
 
-# 3. CSS Tùy chỉnh giao diện (Màu nền đỏ chủ đạo Viettel sang trọng, các thẻ card nổi bật)
+# 3. CSS Tùy chỉnh giao diện: Vùng 1 & Vùng 2 mang màu đỏ Viettel, Vùng 3 nền sáng sạch sẽ
 st.markdown("""
     <style>
     .block-container {
-        padding-top: 0.8rem !important;
+        padding-top: 1rem !important;
         padding-bottom: 2rem !important;
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
@@ -49,29 +50,24 @@ st.markdown("""
     [data-testid="stHeader"] {
         display: none;
     }
-    /* Màu nền trang web: Đỏ chủ đạo đặc trưng Viettel */
+    /* Tổng thể ứng dụng nền sáng trung tính */
     .stApp {
+        background-color: #f4f6f9 !important;
+    }
+    /* VÙNG 2: Sidebar (Menu điều hướng) mang màu đỏ Viettel đặc trưng */
+    [data-testid="stSidebar"] {
         background-color: #a61c1c !important;
-        color: #ffffff;
     }
-    /* Các vùng chứa nội dung/card chuyển sang màu trắng để hiển thị sắc nét */
-    div.block-container, [data-testid="stVerticalBlock"] > div {
-        color: #212529;
+    [data-testid="stSidebar"] * {
+        color: #ffffff !important;
     }
-    /* Thẻ KPI và bảng dữ liệu */
+    /* Thẻ KPI và nội dung vùng chính */
     [data-testid="stMetric"] {
         background-color: #ffffff;
         border-radius: 10px;
         padding: 12px 18px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         border-left: 5px solid #d90429;
-        color: #212529 !important;
-    }
-    [data-testid="stMetricLabel"] {
-        color: #495057 !important;
-    }
-    [data-testid="stMetricValue"] {
-        color: #212529 !important;
     }
     /* Nút bấm chủ đạo */
     .stButton button[kind="primary"] {
@@ -93,7 +89,7 @@ if not st.session_state.logged_in:
     col_l1, col_l2, col_l3 = st.columns([1, 1.2, 1])
     with col_l2:
         st.markdown("""
-            <div style="text-align: center; margin-bottom: 20px; background: #ffffff; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border-top: 6px solid #d90429;">
+            <div style="text-align: center; margin-bottom: 20px; background: #ffffff; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 6px solid #d90429;">
                 <div style="font-family: sans-serif; font-size: 28px; font-weight: 900; color: #d90429; letter-spacing: -0.5px;">viettel</div>
                 <div style="font-family: sans-serif; font-size: 15px; font-weight: 600; color: #212529; letter-spacing: 0.5px; margin-top: -4px;">construction</div>
                 <h4 style="color: #d90429; font-weight: 800; margin: 15px 0 2px 0;">P.VHKT - CNCTHNI</h4>
@@ -122,7 +118,7 @@ if not st.session_state.logged_in:
                     st.error("⚠️ Sai tài khoản hoặc mật khẩu. Vui lòng kiểm tra lại!")
         
         st.markdown("""
-            <div style="text-align: center; margin-top: 15px; font-size: 12px; color: #ffffff;">
+            <div style="text-align: center; margin-top: 15px; font-size: 12px; color: #555;">
                 💡 <i>Mặc định: Quản trị (duongpv2 / admin123) | Nhân viên (user / user123)</i>
             </div>
         """, unsafe_allow_html=True)
@@ -132,37 +128,55 @@ if not st.session_state.logged_in:
 # GIAO DIỆN CHÍNH (3 VÙNG CHUẨN DOANH NGHIỆP)
 # ==========================================
 
-# --- HÀM LẤY THỜI GIAN THỰC CHUẨN MÚI GIỜ VIỆT NAM (UTC+7) ---
-def get_vietnam_time():
-    vn_timezone = timezone(timedelta(hours=7))
-    return datetime.now(vn_timezone).strftime("%d/%m/%Y %H:%M:%S")
-
-current_time_str = get_vietnam_time()
-
-# --- VÙNG 1: HEADER (Logo, Tên đơn vị, Giờ thực tế, Quản lý tài khoản) ---
+# --- VÙNG 1: HEADER (Màu đỏ Viettel chủ đạo, Logo, Tên đơn vị, Đồng hồ chạy trực tiếp, Tài khoản) ---
 col_h1, col_h2, col_h3 = st.columns([2.5, 2, 1.5])
 with col_h1:
     st.markdown("""
-        <div style="display: flex; align-items: center; gap: 12px; background: #ffffff; padding: 10px 15px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div style="display: flex; align-items: center; gap: 12px; background: linear-gradient(90deg, #d90429 0%, #a61c1c 100%); padding: 12px 18px; border-radius: 8px; box-shadow: 0 4px 10px rgba(217, 4, 4, 0.2); color: white;">
             <div style="line-height: 1.1;">
-                <span style="font-family: sans-serif; font-size: 18px; font-weight: 900; color: #d90429; letter-spacing: -0.5px;">viettel</span>
-                <span style="font-family: sans-serif; font-size: 10px; font-weight: 600; color: #212529; display: block; letter-spacing: 0.5px;">construction</span>
+                <span style="font-family: sans-serif; font-size: 18px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px;">viettel</span>
+                <span style="font-family: sans-serif; font-size: 10px; font-weight: 600; color: #ffcccc; display: block; letter-spacing: 0.5px;">construction</span>
             </div>
-            <div style="border-left: 2px solid #dee2e6; padding-left: 10px;">
-                <p style="color: #d90429; font-size: 13px; font-weight: 800; margin: 0;">P.VHKT - CNCTHNI</p>
-                <span style="color: #555; font-size: 10px; font-weight: 600;">Điều hành WO & CSDL</span>
+            <div style="border-left: 2px solid rgba(255,255,255,0.4); padding-left: 12px;">
+                <p style="color: #ffffff; font-size: 13px; font-weight: 800; margin: 0;">P.VHKT - CNCTHNI</p>
+                <span style="color: #ffcccc; font-size: 10px; font-weight: 600;">Điều hành WO & CSDL</span>
             </div>
         </div>
     """, unsafe_allow_html=True)
 
 with col_h2:
-    st.markdown(f"""
-        <div style="text-align: center; padding-top: 10px;">
-            <div style="font-size: 13px; color: #212529; background: #ffffff; padding: 6px 15px; border-radius: 6px; display: inline-block; font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                📅 {current_time_str}
-            </div>
+    # Đồng hồ chạy trực tiếp thời gian thực (Live Clock bằng JavaScript)
+    clock_html = """
+    <div style="text-align: center; padding-top: 6px;">
+        <div id="live-clock" style="font-size: 13px; color: #ffffff; background: #a61c1c; padding: 10px 15px; border-radius: 8px; display: inline-block; font-weight: 700; box-shadow: 0 4px 8px rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.2);">
+            📅 Đang đồng bộ thời gian...
         </div>
-    """, unsafe_allow_html=True)
+    </div>
+    <script>
+    function updateClock() {
+        const now = new Date();
+        // Chỉnh sang múi giờ Việt Nam (UTC+7)
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const vnTime = new Date(utc + (3600000 * 7));
+        
+        const day = String(vnTime.getDate()).padStart(2, '0');
+        const month = String(vnTime.getMonth() + 1).padStart(2, '0');
+        const year = vnTime.getFullYear();
+        const hours = String(vnTime.getHours()).padStart(2, '0');
+        const minutes = String(vnTime.getMinutes()).padStart(2, '0');
+        const seconds = String(vnTime.getSeconds()).padStart(2, '0');
+        
+        const timeString = `📅 ${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+        const elem = document.getElementById('live-clock');
+        if (elem) {
+            elem.innerText = timeString;
+        }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+    </script>
+    """
+    components.html(clock_html, height=45)
 
 with col_h3:
     role_label = "ADMIN" if st.session_state.role == "admin" else "USER"
@@ -185,7 +199,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 # Xử lý giao diện đổi mật khẩu
 if st.session_state.action_view == "change_pass":
     st.markdown("""
-        <div style="background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <div style="background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
             <h3 style="color: #d90429;">🔐 Thay đổi mật khẩu tài khoản</h3>
     """, unsafe_allow_html=True)
     with st.form("form_change_password"):
@@ -215,13 +229,13 @@ if st.session_state.action_view == "change_pass":
     st.stop()
 
 
-# --- VÙNG 2: SIDEBAR (Menu chức năng điều hướng) ---
+# --- VÙNG 2: SIDEBAR (Menu điều hướng nền đỏ Viettel) ---
 with st.sidebar:
     st.markdown("""
-        <div style="text-align: center; padding: 15px 0; border-bottom: 2px solid #d90429; margin-bottom: 15px; background: #ffffff; border-radius: 8px;">
-            <span style="font-family: sans-serif; font-size: 18px; font-weight: 900; color: #d90429;">viettel</span>
-            <span style="font-family: sans-serif; font-size: 11px; font-weight: 600; color: #212529; display: block;">construction</span>
-            <h5 style="color: #333; margin: 8px 0 0 0; font-weight: 800;">QUẢN LÝ ĐIỀU HÀNH</h5>
+        <div style="text-align: center; padding: 15px 0; border-bottom: 2px solid rgba(255,255,255,0.3); margin-bottom: 15px;">
+            <span style="font-family: sans-serif; font-size: 18px; font-weight: 900; color: #ffffff;">viettel</span>
+            <span style="font-family: sans-serif; font-size: 11px; font-weight: 600; color: #ffcccc; display: block;">construction</span>
+            <h5 style="color: #ffffff; margin: 8px 0 0 0; font-weight: 800;">QUẢN LÝ ĐIỀU HÀNH</h5>
         </div>
     """, unsafe_allow_html=True)
     
@@ -254,9 +268,8 @@ df_wo = load_excel_file(wo_path, header_row=1)
 df_pen_lookup = load_excel_file(penalty_lookup_path, header_row=0)
 
 
-# --- VÙNG 3: HIỂN THỊ NỘI DUNG THEO MỤC CHỌN ---
+# --- VÙNG 3: HIỂN THỊ NỘI DUNG THEO MỤC CHỌN (Nền sáng sạch sẽ, chuyên nghiệp) ---
 
-# Bọc toàn bộ vùng 3 trong container nền trắng sạch sẽ
 with st.container():
     if st.session_state.current_page == "📊 Dashboard":
         st.subheader("📊 Tổng Quan Chỉ Số Work Order & Tài Chính")
@@ -440,3 +453,8 @@ with st.container():
                             st.rerun()
         else:
             st.info("Kho lưu trữ CSDL tổng hợp hiện đang trống.")
+
+<ElicitationsGroup message="Anh có muốn kiểm tra hoặc bổ sung thêm tính năng nào cho giao diện này không?">
+  <Elicitation label="Tinh chỉnh kích thước bảng dữ liệu" query="Cách tùy chỉnh độ rộng và chiều cao bảng hiển thị trên Streamlit"/>
+  <Elicitation label="Thêm thông báo toast khi upload thành công" query="Cách sử dụng st.toast để hiển thị thông báo nổi khi thao tác thành công"/>
+</ElicitationsGroup>

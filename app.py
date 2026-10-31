@@ -14,7 +14,7 @@ st.set_page_config(
 if "users_db" not in st.session_state:
     st.session_state.users_db = {
         "duongpv2": {"pass": "admin123", "role": "admin", "name": "Duongpv2 Quản trị viên"},
-        "user": {"pass": "user123", "role": "viewer", "name": "Cán bộ / Nhân viên"}
+        "admin": {"pass": "admin", "role": "viewer", "name": "Cán bộ / Nhân viên"}
     }
 
 if "logged_in" not in st.session_state:

@@ -6,7 +6,7 @@ import io
 import os
 from datetime import datetime, timezone, timedelta
 
-# 1. Cấu hình giao diện trang web toàn màn hình (Mở rộng Vùng 2 mặc định, có nút ẩn/hiện)
+# 1. Cấu hình giao diện trang web toàn màn hình
 st.set_page_config(
     page_title="Điều hành WO & Quản lý CSDL - P.VHKT - CNCTHNI",
     page_icon="🔴",
@@ -39,11 +39,11 @@ if "current_page" not in st.session_state:
 if "action_view" not in st.session_state:
     st.session_state.action_view = "normal"
 
-# 3. CSS Tùy chỉnh giao diện: Vùng 2 màu đỏ Viettel, Vùng 3 nền sáng sạch sẽ
+# 3. CSS Tùy chỉnh giao diện: Vùng 2 nền đỏ Viettel, các ô có viền gạch đỏ
 st.markdown("""
     <style>
     .block-container {
-        padding-top: 0.5rem !important;
+        padding-top: 0.8rem !important;
         padding-bottom: 2rem !important;
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
@@ -56,7 +56,8 @@ st.markdown("""
     }
     /* VÙNG 2: Sidebar nền màu đỏ Viettel đặc trưng, chữ trắng */
     [data-testid="stSidebar"] {
-        background-color: #d90429 !important;
+        background-color: #a61c1c !important;
+        border-right: 2px solid #d90429;
     }
     [data-testid="stSidebar"] * {
         color: #ffffff !important;
@@ -67,17 +68,19 @@ st.markdown("""
         border-radius: 6px;
         margin-bottom: 6px;
         transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
     [data-testid="stSidebar"] div[role="radiogroup"] label:hover {
-        background-color: rgba(255, 255, 255, 0.2);
+        background-color: rgba(255, 255, 255, 0.25);
     }
-    /* Thẻ KPI và nội dung */
+    /* Thẻ KPI có viền gạch đỏ ngăn cách rõ ràng */
     [data-testid="stMetric"] {
         background-color: #ffffff;
-        border-radius: 10px;
+        border-radius: 8px;
         padding: 12px 18px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        border-left: 5px solid #d90429;
+        border: 1px solid #d90429 !important;
+        border-left: 5px solid #d90429 !important;
     }
     /* Nút bấm chủ đạo */
     .stButton button[kind="primary"] {
@@ -86,7 +89,7 @@ st.markdown("""
         color: white !important;
     }
     .stButton button[kind="primary"]:hover {
-        background-color: #b50322 !important;
+        background-color: #8b0000 !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -99,8 +102,9 @@ if not st.session_state.logged_in:
     col_l1, col_l2, col_l3 = st.columns([1, 1.2, 1])
     with col_l2:
         st.markdown("""
-            <div style="text-align: center; margin-bottom: 20px; background: #ffffff; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 6px solid #d90429;">
-                <div style="font-family: sans-serif; font-size: 28px; font-weight: 900; color: #d90429; letter-spacing: -0.5px;">viettelconstruction</div>
+            <div style="text-align: center; margin-bottom: 20px; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 2px solid #d90429;">
+                <div style="font-family: sans-serif; font-size: 26px; font-weight: 900; color: #d90429; letter-spacing: -0.5px; line-height: 1;">VIETTEL</div>
+                <div style="font-family: sans-serif; font-size: 10px; font-weight: 700; color: #333333; letter-spacing: 4.5px; text-transform: lowercase; margin-top: 3px;">construction</div>
                 <h4 style="color: #d90429; font-weight: 800; margin: 15px 0 2px 0;">P.VHKT - CNCTHNI</h4>
                 <p style="color: #6c757d; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Hệ thống Điều hành & Quản lý CSDL</p>
             </div>
@@ -124,84 +128,85 @@ if not st.session_state.logged_in:
                 else:
                     st.error("⚠️ Sai tài khoản hoặc mật khẩu. Vui lòng kiểm tra lại!")
         
-        st.markdown("""
-            <div style="text-align: center; margin-top: 15px; font-size: 12px; color: #555;">
-                💡 <i>Mặc định: Quản trị (duongpv2 / admin123) | Nhân viên (user / user123)</i>
-            </div>
-        """, unsafe_allow_html=True)
-    st.stop()
+        st.stop()
 
 # ==========================================
 # GIAO DIỆN CHÍNH (3 VÙNG CHUẨN DOANH NGHIỆP)
 # ==========================================
 
-# --- VÙNG 1: KHUNG TRẮNG CHẠY XUYÊN SUỐT TỪ TRÁI QUA PHẢI, CHỮ VIETTELCONSTRUCTION MÀU ĐỎ ---
-st.markdown("""
-    <div style="background-color: #ffffff; padding: 12px 20px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="font-family: sans-serif; font-size: 22px; font-weight: 900; color: #d90429; letter-spacing: -0.5px;">viettelconstruction</span>
-            <span style="color: #dee2e6; font-size: 20px;">|</span>
-            <div>
-                <span style="color: #d90429; font-size: 14px; font-weight: 800;">P.VHKT - CNCTHNI</span>
-                <span style="color: #495057; font-size: 12px; font-weight: 600; display: block;">Điều hành WO & CSDL</span>
+# --- VÙNG 1: KHUNG TRẮNG CHẠY XUYÊN SUỐT, SẮP XẾP LOGO, ĐỒNG HỒ, TÀI KHOẢN CÙNG HÀNG ---
+with st.container():
+    st.markdown("""
+        <div style="background-color: #ffffff; padding: 10px 20px; border-radius: 8px; border: 1px solid #d90429; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 5px;">
+    """, unsafe_allow_html=True)
+    
+    h_col1, h_col2, h_col3, h_col4 = st.columns([1.5, 1.8, 1.5, 1.2])
+    with h_col1:
+        st.markdown("""
+            <div style="line-height: 1.1; padding-top: 2px;">
+                <span style="font-family: sans-serif; font-size: 20px; font-weight: 900; color: #d90429; letter-spacing: -0.5px;">VIETTEL</span><br>
+                <span style="font-family: sans-serif; font-size: 9px; font-weight: 700; color: #333333; letter-spacing: 4px; text-transform: lowercase; display: inline-block; width: 100%;">construction</span>
+            </div>
+        """, unsafe_allow_html=True)
+    with h_col2:
+        st.markdown("""
+            <div style="padding-top: 4px; border-left: 1px solid #dee2e6; padding-left: 12px;">
+                <span style="color: #d90429; font-size: 13px; font-weight: 800;">P.VHKT - CNCTHNI</span><br>
+                <span style="color: #495057; font-size: 11px; font-weight: 600;">Điều hành WO & CSDL</span>
+            </div>
+        """, unsafe_allow_html=True)
+    with h_col3:
+        clock_html = """
+        <div style="padding-top: 4px; text-align: center;">
+            <div id="live-clock" style="font-size: 12px; color: #212529; background: #f8f9fa; padding: 6px 12px; border-radius: 6px; display: inline-block; font-weight: 700; border: 1px solid #d90429;">
+                📅 Đang đồng bộ...
             </div>
         </div>
-    </div>
-""", unsafe_allow_html=True)
+        <script>
+        function updateClock() {
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const vnTime = new Date(utc + (3600000 * 7));
+            const day = String(vnTime.getDate()).padStart(2, '0');
+            const month = String(vnTime.getMonth() + 1).padStart(2, '0');
+            const year = vnTime.getFullYear();
+            const hours = String(vnTime.getHours()).padStart(2, '0');
+            const minutes = String(vnTime.getMinutes()).padStart(2, '0');
+            const seconds = String(vnTime.getSeconds()).padStart(2, '0');
+            const timeString = `📅 ${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+            const elem = document.getElementById('live-clock');
+            if (elem) { elem.innerText = timeString; }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+        </script>
+        """
+        components.html(clock_html, height=35)
+    with h_col4:
+        role_label = "ADMIN" if st.session_state.role == "admin" else "USER"
+        with st.popover(f"👤 {st.session_state.name} ({role_label})", use_container_width=True):
+            st.markdown(f"**Tài khoản:** `{st.session_state.username}`")
+            st.markdown(f"**Phân quyền:** `{role_label}`")
+            st.markdown("---")
+            if st.button("🔐 Đổi mật khẩu cá nhân", use_container_width=True):
+                st.session_state.action_view = "change_pass"
+                st.rerun()
+            if st.button("🚪 Đăng xuất hệ thống", use_container_width=True, type="primary"):
+                st.session_state.logged_in = False
+                st.session_state.username = ""
+                st.session_state.role = ""
+                st.session_state.action_view = "normal"
+                st.rerun()
+                
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# Thanh công cụ phụ (Đồng hồ thực & Popover tài khoản) nằm gọn trong Vùng 1
-col_top_l, col_top_r = st.columns([3, 1])
-with col_top_l:
-    clock_html = """
-    <div style="padding-top: 6px;">
-        <div id="live-clock" style="font-size: 13px; color: #212529; background: #ffffff; padding: 6px 12px; border-radius: 6px; display: inline-block; font-weight: 700; border: 1px solid #dee2e6; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-            📅 Đang đồng bộ thời gian...
-        </div>
-    </div>
-    <script>
-    function updateClock() {
-        const now = new Date();
-        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-        const vnTime = new Date(utc + (3600000 * 7));
-        const day = String(vnTime.getDate()).padStart(2, '0');
-        const month = String(vnTime.getMonth() + 1).padStart(2, '0');
-        const year = vnTime.getFullYear();
-        const hours = String(vnTime.getHours()).padStart(2, '0');
-        const minutes = String(vnTime.getMinutes()).padStart(2, '0');
-        const seconds = String(vnTime.getSeconds()).padStart(2, '0');
-        const timeString = `📅 ${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-        const elem = document.getElementById('live-clock');
-        if (elem) { elem.innerText = timeString; }
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-    </script>
-    """
-    components.html(clock_html, height=38)
-
-with col_top_r:
-    role_label = "ADMIN" if st.session_state.role == "admin" else "USER"
-    with st.popover(f"👤 {st.session_state.name} ({role_label})", use_container_width=True):
-        st.markdown(f"**Tài khoản:** `{st.session_state.username}`")
-        st.markdown(f"**Phân quyền:** `{role_label}`")
-        st.markdown("---")
-        if st.button("🔐 Đổi mật khẩu cá nhân", use_container_width=True):
-            st.session_state.action_view = "change_pass"
-            st.rerun()
-        if st.button("🚪 Đăng xuất hệ thống", use_container_width=True, type="primary"):
-            st.session_state.logged_in = False
-            st.session_state.username = ""
-            st.session_state.role = ""
-            st.session_state.action_view = "normal"
-            st.rerun()
-
-# --- ĐƯỜNG KẺ ĐỎ NGĂN CÁCH VÙNG 1 VỚI VÙNG 2 & VÙNG 3 ---
-st.markdown('<hr style="border: none; height: 3px; background-color: #d90429; margin: 10px 0 20px 0;">', unsafe_allow_html=True)
+# --- ĐƯỜNG KẺ ĐỎ ĐẬM NGĂN CÁCH VÙNG 1 VỚI VÙNG 2 & VÙNG 3 ---
+st.markdown('<hr style="border: none; height: 3px; background-color: #d90429; margin: 5px 0 15px 0;">', unsafe_allow_html=True)
 
 # Xử lý giao diện đổi mật khẩu
 if st.session_state.action_view == "change_pass":
     st.markdown("""
-        <div style="background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        <div style="background: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #d90429; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
             <h3 style="color: #d90429;">🔐 Thay đổi mật khẩu tài khoản</h3>
     """, unsafe_allow_html=True)
     with st.form("form_change_password"):
@@ -229,12 +234,13 @@ if st.session_state.action_view == "change_pass":
     st.stop()
 
 
-# --- VÙNG 2: SIDEBAR NỀN ĐỎ, CÓ TÍNH NĂNG ẨN/HIỆN ---
+# --- VÙNG 2: SIDEBAR NỀN ĐỎ, CÓ NÚT ẨN/HIỆN TIÊU CHUẨN ---
 with st.sidebar:
     st.markdown("""
         <div style="text-align: center; padding: 15px 0; border-bottom: 2px solid rgba(255,255,255,0.3); margin-bottom: 15px;">
-            <span style="font-family: sans-serif; font-size: 18px; font-weight: 900; color: #ffffff;">viettelconstruction</span>
-            <h5 style="color: #ffffff; margin: 8px 0 0 0; font-weight: 800;">QUẢN LÝ ĐIỀU HÀNH</h5>
+            <div style="font-family: sans-serif; font-size: 20px; font-weight: 900; color: #ffffff; line-height: 1;">VIETTEL</div>
+            <div style="font-family: sans-serif; font-size: 9px; font-weight: 700; color: #ffcccc; letter-spacing: 4px; text-transform: lowercase; margin-top: 3px;">construction</div>
+            <h5 style="color: #ffffff; margin: 10px 0 0 0; font-weight: 800; font-size: 14px;">QUẢN LÝ ĐIỀU HÀNH</h5>
         </div>
     """, unsafe_allow_html=True)
     
@@ -266,7 +272,7 @@ df_wo = load_excel_file(wo_path, header_row=1)
 df_pen_lookup = load_excel_file(penalty_lookup_path, header_row=0)
 
 
-# --- VÙNG 3: NỘI DUNG CHÍNH ---
+# --- VÙNG 3: NỘI DUNG CHÍNH (CÓ VIỀN GẠCH ĐỎ NGĂN CÁCH CÁC KHUNG) ---
 with st.container():
     if st.session_state.current_page == "📊 Dashboard":
         st.subheader("📊 Tổng Quan Chỉ Số Work Order & Tài Chính")
@@ -295,7 +301,8 @@ with st.container():
             k4.metric("⚠️ Quá Hạn", f"{quahan_count:,}", delta="Cần xử lý", delta_color="inverse")
             k5.metric("💸 Tổng Tiền Phạt Đơn Vị", f"{total_unit_penalty:,.0f} đ")
             
-            st.markdown("---")
+            st.markdown('<hr style="border: none; height: 1px; background-color: #d90429; margin: 20px 0;">', unsafe_allow_html=True)
+            
             bc1, bc2 = st.columns(2)
             with bc1:
                 if 'Trung tâm' in df_wo.columns and 'Trạng thái' in df_wo.columns:
@@ -330,7 +337,7 @@ with st.container():
             m1.metric("Tổng WO hiển thị", f"{tot_wo:,}")
             m2.metric("WO Đã Đóng", f"{cl_dong:,}")
             m3.metric("WO Quá Hạn", f"{cl_qh:,}")
-            st.markdown("---")
+            st.markdown('<hr style="border: none; height: 1px; background-color: #d90429; margin: 20px 0;">', unsafe_allow_html=True)
             st.markdown("#### 🔍 Bộ lọc và Tra cứu chi tiết (Drill-Down)")
             f1, f2, f3 = st.columns(3)
             with f1:
@@ -375,7 +382,7 @@ with st.container():
                     with open(penalty_lookup_path, "wb") as f:
                         f.write(up_lookup.getbuffer())
                     st.success("Đã lưu file Tra cứu tiền phạt! Hãy F5 để xem.")
-            st.markdown("---")
+            st.markdown('<hr style="border: none; height: 1px; background-color: #d90429; margin: 20px 0;">', unsafe_allow_html=True)
         st.markdown("#### 🔍 Bảng Tra Cứu Dữ Liệu Tiền Phạt Đơn Vị")
         if df_pen_lookup is not None:
             search_pen = st.text_input("🔎 Tìm kiếm thông tin phạt:")
@@ -404,6 +411,7 @@ with st.container():
                         f.write(up_csdl.getbuffer())
                 st.success(f"Đã tải lên và lưu thành công **{len(up_csdl_files)}** file vào kho CSDL tổng hợp!")
                 st.rerun()
+        st.markdown('<hr style="border: none; height: 1px; background-color: #d90429; margin: 20px 0;">', unsafe_allow_html=True)
         st.markdown("#### 📁 Danh sách các tệp CSDL đang lưu trữ trên hệ thống:")
         files_in_csdl = os.listdir(CSDL_DIR)
         if files_in_csdl:

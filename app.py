@@ -13,7 +13,7 @@ st.set_page_config(
 # 2. Khởi tạo danh sách tài khoản trong st.session_state (nếu chưa có)
 if "users_db" not in st.session_state:
     st.session_state.users_db = {
-        "admin": {"pass": "admin123", "role": "admin", "name": "Duongpv2 Quản trị viên"},
+        "duongpv2": {"pass": "admin123", "role": "admin", "name": "Duongpv2 Quản trị viên"},
         "user": {"pass": "user123", "role": "viewer", "name": "Cán bộ / Nhân viên"}
     }
 

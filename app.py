@@ -10,8 +10,7 @@ from datetime import datetime, timezone, timedelta
 st.set_page_config(
     page_title="Điều hành WO & Quản lý CSDL - P.VHKT - CNCTHNI",
     page_icon="🔴",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
 # Thư mục lưu trữ dữ liệu
@@ -20,7 +19,7 @@ CSDL_DIR = "csdl_tong_hop"
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(CSDL_DIR, exist_ok=True)
 
-# 2. Quản lý trạng thái phiên đăng nhập và điều hướng
+# 2. Khởi tạo trạng thái phiên làm việc (Session State)
 if "users_db" not in st.session_state:
     st.session_state.users_db = {
         "duongpv2": {"pass": "admin123", "role": "admin", "name": "Phạm Văn Dương"},
@@ -33,17 +32,17 @@ if "logged_in" not in st.session_state:
     st.session_state.role = ""
     st.session_state.name = ""
 
-if "current_page" not in st.session_state:
-    st.session_state.current_page = "📊 Dashboard"
+if "current_tab" not in st.session_state:
+    st.session_state.current_tab = "📊 Dashboard"
 
 if "action_view" not in st.session_state:
     st.session_state.action_view = "normal"
 
-# 3. CSS Tùy chỉnh giao diện: Vùng 2 nền đỏ Viettel cố định, các khung có viền gạch đỏ
+# 3. CSS Tùy chỉnh giao diện doanh nghiệp cao cấp (Đỏ đô #a61c1c, không dùng Sidebar gốc)
 st.markdown("""
     <style>
     .block-container {
-        padding-top: 0.8rem !important;
+        padding-top: 1rem !important;
         padding-bottom: 2rem !important;
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
@@ -54,26 +53,7 @@ st.markdown("""
     .stApp {
         background-color: #f4f6f9 !important;
     }
-    /* VÙNG 2: Sidebar nền màu đỏ Viettel đặc trưng, chữ trắng */
-    [data-testid="stSidebar"] {
-        background-color: #a61c1c !important;
-        border-right: 2px solid #d90429;
-    }
-    [data-testid="stSidebar"] * {
-        color: #ffffff !important;
-    }
-    [data-testid="stSidebar"] div[role="radiogroup"] label {
-        background-color: rgba(255, 255, 255, 0.1);
-        padding: 8px 12px;
-        border-radius: 6px;
-        margin-bottom: 6px;
-        transition: all 0.3s ease;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    [data-testid="stSidebar"] div[role="radiogroup"] label:hover {
-        background-color: rgba(255, 255, 255, 0.25);
-    }
-    /* Thẻ KPI có viền gạch đỏ ngăn cách rõ ràng */
+    /* Thẻ KPI chuẩn doanh nghiệp */
     [data-testid="stMetric"] {
         background-color: #ffffff;
         border-radius: 8px;
@@ -82,10 +62,10 @@ st.markdown("""
         border: 1px solid #d90429 !important;
         border-left: 5px solid #d90429 !important;
     }
-    /* Nút bấm chủ đạo */
+    /* Nút bấm chủ đạo màu đỏ đô */
     .stButton button[kind="primary"] {
-        background-color: #d90429 !important;
-        border-color: #d90429 !important;
+        background-color: #a61c1c !important;
+        border-color: #a61c1c !important;
         color: white !important;
     }
     .stButton button[kind="primary"]:hover {
@@ -95,17 +75,17 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# MÀN HÌNH ĐĂNG NHẬP
+# MÀN HÌNH ĐĂNG NHẬP AN TOÀN
 # ==========================================
 if not st.session_state.logged_in:
     st.markdown("<br><br>", unsafe_allow_html=True)
     col_l1, col_l2, col_l3 = st.columns([1, 1.2, 1])
     with col_l2:
         st.markdown("""
-            <div style="text-align: center; margin-bottom: 20px; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 2px solid #d90429;">
-                <div style="font-family: sans-serif; font-size: 30px; font-weight: 900; color: #d90429; letter-spacing: -0.5px; line-height: 1;">VIETTEL</div>
+            <div style="text-align: center; margin-bottom: 20px; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 2px solid #a61c1c;">
+                <div style="font-family: sans-serif; font-size: 30px; font-weight: 900; color: #a61c1c; letter-spacing: -0.5px; line-height: 1;">VIETTEL</div>
                 <div style="font-family: sans-serif; font-size: 11px; font-weight: 700; color: #333333; letter-spacing: 5px; text-transform: lowercase; margin-top: 4px;">construction</div>
-                <h4 style="color: #d90429; font-weight: 800; margin: 15px 0 2px 0;">P.VHKT - CNCTHNI</h4>
+                <h4 style="color: #a61c1c; font-weight: 800; margin: 15px 0 2px 0;">P.VHKT - CNCTHNI</h4>
                 <p style="color: #6c757d; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Hệ thống Điều hành & Quản lý CSDL</p>
             </div>
         """, unsafe_allow_html=True)
@@ -130,11 +110,13 @@ if not st.session_state.logged_in:
         st.stop()
 
 # ==========================================
-# GIAO DIỆN CHÍNH (3 VÙNG CHUẨN DOANH NGHIỆP)
+# XỬ LÝ DỮ LIỆU & CACHE CHỐNG KẸT FILE
 # ==========================================
-
-# Lấy thời gian cập nhật file WO trên GitHub (dựa vào thời gian sửa file Web.xlsx)
 wo_path = "Web.xlsx"
+penalty_lookup_path = os.path.join(DATA_DIR, "penalty_lookup.xlsx")
+penalty_detail_path = os.path.join(DATA_DIR, "penalty_detail.xlsx")
+
+# Lấy thời gian cập nhật thực tế từ file trên ổ đĩa (tránh cache cũ)
 last_update_str = "Chưa có dữ liệu"
 if os.path.exists(wo_path):
     m_time = os.path.getmtime(wo_path)
@@ -142,10 +124,31 @@ if os.path.exists(wo_path):
     dt_update = datetime.fromtimestamp(m_time, tz=vn_timezone)
     last_update_str = dt_update.strftime("%H:%M:%S %d/%m/%Y")
 
-# --- VÙNG 1: KHUNG TRẮNG CHẠY XUYÊN SUỐT ---
+@st.cache_data
+def load_excel_with_mtime(file_path, header_row=0, mtime=0):
+    """Hàm đọc file Excel thông minh, tự động làm mới cache khi file thay đổi mtime"""
+    try:
+        if os.path.exists(file_path):
+            if file_path.endswith('.csv'):
+                return pd.read_csv(file_path)
+            return pd.read_excel(file_path, header=header_row, engine="calamine")
+    except Exception as e:
+        st.error(f"Lỗi đọc file {file_path}: {e}")
+    return None
+
+# Gọi dữ liệu an toàn dựa trên mtime hiện tại của file
+wo_mtime = os.path.getmtime(wo_path) if os.path.exists(wo_path) else 0
+pen_mtime = os.path.getmtime(penalty_lookup_path) if os.path.exists(penalty_lookup_path) else 0
+
+df_wo = load_excel_with_mtime(wo_path, header_row=1, mtime=wo_mtime)
+df_pen_lookup = load_excel_with_mtime(penalty_lookup_path, header_row=0, mtime=pen_mtime)
+
+# ==========================================
+# VÙNG 1 – HEADER (Nhận diện Viettel, Đồng hồ, Thông tin tài khoản)
+# ==========================================
 with st.container():
     st.markdown("""
-        <div style="background-color: #ffffff; padding: 12px 20px; border-radius: 8px; border: 1px solid #d90429; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 5px;">
+        <div style="background-color: #ffffff; padding: 12px 20px; border-radius: 8px; border: 1px solid #a61c1c; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 5px;">
     """, unsafe_allow_html=True)
     
     h_col1, h_col2, h_col3, h_col4 = st.columns([1.5, 1.8, 2.2, 1.8])
@@ -153,24 +156,24 @@ with st.container():
     with h_col1:
         st.markdown("""
             <div style="line-height: 1.1; padding-top: 2px;">
-                <span style="font-family: sans-serif; font-size: 24px; font-weight: 900; color: #d90429; letter-spacing: -0.5px;">VIETTEL</span><br>
+                <span style="font-family: sans-serif; font-size: 24px; font-weight: 900; color: #a61c1c; letter-spacing: -0.5px;">VIETTEL</span><br>
                 <span style="font-family: sans-serif; font-size: 10px; font-weight: 700; color: #333333; letter-spacing: 4.5px; text-transform: lowercase; display: inline-block; width: 100%;">construction</span>
             </div>
         """, unsafe_allow_html=True)
         
     with h_col2:
         st.markdown("""
-            <div style="padding-top: 2px; border-left: 2px solid #d90429; padding-left: 12px;">
-                <span style="color: #d90429; font-size: 13px; font-weight: 800;">P.VHKT - CNCTHNI</span><br>
+            <div style="padding-top: 2px; border-left: 2px solid #a61c1c; padding-left: 12px;">
+                <span style="color: #a61c1c; font-size: 13px; font-weight: 800;">P.VHKT - CNCTHNI</span><br>
                 <span style="color: #495057; font-size: 11px; font-weight: 600;">Hệ thống Điều hành & CSDL</span>
             </div>
         """, unsafe_allow_html=True)
         
     with h_col3:
         clock_html = """
-        <div style="padding-top: 2px; text-align: center; border-left: 2px solid #d90429; padding-left: 10px;">
+        <div style="padding-top: 2px; text-align: center; border-left: 2px solid #a61c1c; padding-left: 10px;">
             <div style="font-size: 10px; font-weight: 700; color: #6c757d; text-transform: uppercase;">Thời gian thực (UTC+7)</div>
-            <div id="live-clock" style="font-size: 14px; color: #d90429; background: #fff5f5; padding: 4px 10px; border-radius: 6px; display: inline-block; font-weight: 800; border: 1px solid #d90429; margin-top: 2px;">
+            <div id="live-clock" style="font-size: 14px; color: #a61c1c; background: #fff5f5; padding: 4px 10px; border-radius: 6px; display: inline-block; font-weight: 800; border: 1px solid #a61c1c; margin-top: 2px;">
                 📅 Đang đồng bộ...
             </div>
         </div>
@@ -197,9 +200,9 @@ with st.container():
         
     with h_col4:
         st.markdown(f"""
-            <div style="border-left: 2px solid #d90429; padding-left: 10px; font-size: 11px; line-height: 1.3;">
+            <div style="border-left: 2px solid #a61c1c; padding-left: 10px; font-size: 11px; line-height: 1.3;">
                 <span style="color: #6c757d; font-weight: 600;">CSDL cập nhật:</span><br>
-                <span style="color: #d90429; font-weight: 700;">🕒 {last_update_str}</span>
+                <span style="color: #a61c1c; font-weight: 700;">🕒 {last_update_str}</span>
             </div>
         """, unsafe_allow_html=True)
         
@@ -220,14 +223,14 @@ with st.container():
                 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- ĐƯỜNG KẺ ĐỎ ĐẬM NGĂN CÁCH VÙNG 1 VỚI VÙNG 2 & VÙNG 3 ---
-st.markdown('<hr style="border: none; height: 3px; background-color: #d90429; margin: 5px 0 15px 0;">', unsafe_allow_html=True)
+# Đường kẻ đỏ ngăn cách Vùng 1 với Vùng 2 & 3
+st.markdown('<hr style="border: none; height: 3px; background-color: #a61c1c; margin: 5px 0 15px 0;">', unsafe_allow_html=True)
 
 # Xử lý giao diện đổi mật khẩu
 if st.session_state.action_view == "change_pass":
     st.markdown("""
-        <div style="background: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #d90429; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-            <h3 style="color: #d90429;">🔐 Thay đổi mật khẩu tài khoản</h3>
+        <div style="background: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #a61c1c; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+            <h3 style="color: #a61c1c;">🔐 Thay đổi mật khẩu tài khoản</h3>
     """, unsafe_allow_html=True)
     with st.form("form_change_password"):
         old_p = st.text_input("Mật khẩu cũ", type="password")
@@ -253,125 +256,126 @@ if st.session_state.action_view == "change_pass":
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# --- VÙNG 2: SIDEBAR NỀN ĐỎ VIETTEL CỐ ĐỊNH (CÓ NÚT ẨN/HIỆN GỐC CỦA STREAMLIT) ---
-with st.sidebar:
-    st.markdown("""
-        <div style="text-align: center; padding: 15px 0; border-bottom: 2px solid rgba(255,255,255,0.3); margin-bottom: 15px;">
-            <div style="font-family: sans-serif; font-size: 24px; font-weight: 900; color: #ffffff; line-height: 1;">VIETTEL</div>
-            <div style="font-family: sans-serif; font-size: 10px; font-weight: 700; color: #ffcccc; letter-spacing: 4.5px; text-transform: lowercase; margin-top: 3px;">construction</div>
-            <h5 style="color: #ffffff; margin: 10px 0 0 0; font-weight: 800; font-size: 14px;">QUẢN LÝ ĐIỀU HÀNH</h5>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    menu_options = ["📊 Dashboard", "📋 Dữ liệu WO", "💰 Dữ liệu tiền phạt", "🗂️ CSDL tổng hợp"]
-    selected_menu = st.radio(
-        "Chọn chức năng:",
-        menu_options,
-        index=menu_options.index(st.session_state.current_page) if st.session_state.current_page in menu_options else 0,
-        label_visibility="collapsed"
-    )
-    st.session_state.current_page = selected_menu
+# ==========================================
+# VÙNG 2 – THANH ĐIỀU HƯỚNG NGANG (Top Navigation Bar)
+# ==========================================
+menu_options = ["📊 Dashboard", "📋 Dữ liệu WO", "💰 Dữ liệu tiền phạt", "🗂️ CSDL tổng hợp"]
 
-# --- HÀM ĐỌC DỮ LIỆU ---
-@st.cache_data
-def load_excel_file(file_path, header_row=0):
-    try:
-        if os.path.exists(file_path):
-            return pd.read_excel(file_path, header=header_row, engine="calamine")
-    except Exception:
-        pass
-    return None
+# Sử dụng radio horizontal hoặc st.columns để tạo menu ngang không bao giờ bị ẩn
+selected_tab = st.radio(
+    "Chọn chức năng điều hành:",
+    menu_options,
+    index=menu_options.index(st.session_state.current_tab) if st.session_state.current_tab in menu_options else 0,
+    horizontal=True,
+    label_visibility="collapsed"
+)
+st.session_state.current_tab = selected_tab
 
-penalty_lookup_path = os.path.join(DATA_DIR, "penalty_lookup.xlsx")
-penalty_detail_path = os.path.join(DATA_DIR, "penalty_detail.xlsx")
+st.markdown('<hr style="border: none; height: 1px; background-color: #dee2e6; margin: 10px 0 20px 0;">', unsafe_allow_html=True)
 
-df_wo = load_excel_file(wo_path, header_row=1)
-df_pen_lookup = load_excel_file(penalty_lookup_path, header_row=0)
-
-# --- VÙNG 3: NỘI DUNG CHÍNH ---
+# ==========================================
+# VÙNG 3 – NỘI DUNG CHÍNH (Schema Validation & Dashboards)
+# ==========================================
 with st.container():
-    if st.session_state.current_page == "📊 Dashboard":
+    if st.session_state.current_tab == "📊 Dashboard":
         st.subheader("📊 Tổng Quan Chỉ Số Work Order & Tài Chính")
         if df_wo is not None:
-            total_wo = len(df_wo)
-            dong_count = len(df_wo[df_wo['Trạng thái'] == 'Đóng']) if 'Trạng thái' in df_wo.columns else 0
-            dang_xu_ly = total_wo - dong_count
-            quahan_count = int(df_wo['Quá hạn'].sum()) if 'Quá hạn' in df_wo.columns else 0
-            
-            total_unit_penalty = 0
-            if df_pen_lookup is not None:
-                for col in df_pen_lookup.columns:
-                    if 'phạt' in str(col).lower() or 'tiền' in str(col).lower():
-                        try:
-                            total_unit_penalty = pd.to_numeric(df_pen_lookup[col], errors='coerce').sum()
-                            break
-                        except:
-                            pass
-            if total_unit_penalty == 0 and df_wo is not None and 'Tổng tiền phạt' in df_wo.columns:
-                total_unit_penalty = df_wo['Tổng tiền phạt'].sum()
+            # Kiểm tra cấu trúc an toàn (Schema Validation) chống KeyError
+            required_cols = ['Trạng thái']
+            missing_cols = [col for col in required_cols if col not in df_wo.columns]
+            if missing_cols:
+                st.error(f"⚠️ File `Web.xlsx` thiếu cột bắt buộc: {missing_cols}. Vui lòng kiểm tra lại cấu trúc file.")
+            else:
+                total_wo = len(df_wo)
+                dong_count = len(df_wo[df_wo['Trạng thái'] == 'Đóng']) if 'Trạng thái' in df_wo.columns else 0
+                dang_xu_ly = total_wo - dong_count
+                quahan_count = int(df_wo['Quá hạn'].sum()) if 'Quá hạn' in df_wo.columns else 0
+                
+                total_unit_penalty = 0
+                if df_pen_lookup is not None:
+                    for col in df_pen_lookup.columns:
+                        if 'phạt' in str(col).lower() or 'tiền' in str(col).lower():
+                            try:
+                                total_unit_penalty = pd.to_numeric(df_pen_lookup[col], errors='coerce').sum()
+                                break
+                            except:
+                                pass
+                if total_unit_penalty == 0 and df_wo is not None and 'Tổng tiền phạt' in df_wo.columns:
+                    total_unit_penalty = df_wo['Tổng tiền phạt'].sum()
 
-            k1, k2, k3, k4, k5 = st.columns(5)
-            k1.metric("📦 Tổng WO", f"{total_wo:,}")
-            k2.metric("⏳ Đang Thực Hiện", f"{dang_xu_ly:,}")
-            k3.metric("✅ Đã Đóng", f"{dong_count:,}")
-            k4.metric("⚠️ Quá Hạn", f"{quahan_count:,}", delta="Cần xử lý", delta_color="inverse")
-            k5.metric("💸 Tổng Tiền Phạt Đơn Vị", f"{total_unit_penalty:,.0f} đ")
-            
-            st.markdown('<hr style="border: none; height: 1px; background-color: #d90429; margin: 20px 0;">', unsafe_allow_html=True)
-            
-            bc1, bc2 = st.columns(2)
-            with bc1:
-                if 'Trung tâm' in df_wo.columns and 'Trạng thái' in df_wo.columns:
-                    st.markdown("**Phân bổ Work Order theo Trung tâm**")
-                    fig_b = px.histogram(df_wo, x="Trung tâm", color="Trạng thái", barmode="stack", color_discrete_sequence=px.colors.sequential.Reds_r)
-                    fig_b.update_layout(xaxis_tickangle=-45, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-                    st.plotly_chart(fig_b, use_container_width=True)
-            with bc2:
-                if 'Loại công việc' in df_wo.columns:
-                    st.markdown("**Top 10 Loại công việc phổ biến**")
-                    top_l = df_wo['Loại công việc'].value_counts().head(10).reset_index()
-                    top_l.columns = ['Loại công việc', 'Số lượng']
-                    fig_p = px.pie(top_l, names='Loại công việc', values='Số lượng', hole=0.4, color_discrete_sequence=px.colors.sequential.RdBu)
-                    st.plotly_chart(fig_p, use_container_width=True)
+                k1, k2, k3, k4, k5 = st.columns(5)
+                k1.metric("📦 Tổng WO", f"{total_wo:,}")
+                k2.metric("⏳ Đang Thực Hiện", f"{dang_xu_ly:,}")
+                k3.metric("✅ Đã Đóng", f"{dong_count:,}")
+                k4.metric("⚠️ Quá Hạn", f"{quahan_count:,}", delta="Cần xử lý", delta_color="inverse")
+                k5.metric("💸 Tổng Tiền Phạt Đơn Vị", f"{total_unit_penalty:,.0f} đ")
+                
+                st.markdown('<hr style="border: none; height: 1px; background-color: #a61c1c; margin: 20px 0;">', unsafe_allow_html=True)
+                
+                bc1, bc2 = st.columns(2)
+                with bc1:
+                    if 'Trung tâm' in df_wo.columns and 'Trạng thái' in df_wo.columns:
+                        st.markdown("**Phân bổ Work Order theo Trung tâm**")
+                        fig_b = px.histogram(df_wo, x="Trung tâm", color="Trạng thái", barmode="stack", color_discrete_sequence=px.colors.sequential.Reds_r)
+                        fig_b.update_layout(xaxis_tickangle=-45, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+                        st.plotly_chart(fig_b, use_container_width=True)
+                with bc2:
+                    if 'Loại công việc' in df_wo.columns:
+                        st.markdown("**Top 10 Loại công việc phổ biến**")
+                        top_l = df_wo['Loại công việc'].value_counts().head(10).reset_index()
+                        top_l.columns = ['Loại công việc', 'Số lượng']
+                        fig_p = px.pie(top_l, names='Loại công việc', values='Số lượng', hole=0.4, color_discrete_sequence=px.colors.sequential.RdBu)
+                        st.plotly_chart(fig_p, use_container_width=True)
         else:
-            st.warning("⚠️ Chưa tìm thấy tệp dữ liệu `Web.xlsx`.")
+            st.warning("⚠️ Chưa tìm thấy tệp dữ liệu `Web.xlsx` trong hệ thống.")
 
-    elif st.session_state.current_page == "📋 Dữ liệu WO":
+    elif st.session_state.current_tab == "📋 Dữ liệu WO":
         st.subheader("📋 Dashboard Tổng Hợp & Tra Cứu Dữ Liệu Work Order (Drill-Down)")
         if st.session_state.role == "admin":
             with st.expander("⚙️ [Admin] Tải lên file dữ liệu Web.xlsx mới"):
-                up_wo = st.file_uploader("Chọn file Excel WO (.xlsx)", type=["xlsx", "csv"], key="upload_wo")
+                up_wo = st.file_uploader("Chọn file Excel hoặc CSV WO", type=["xlsx", "csv"], key="upload_wo")
                 if up_wo is not None:
-                    with open(wo_path, "wb") as f:
+                    save_file_path = wo_path if up_wo.name.endswith('.xlsx') else os.path.join(DATA_DIR, up_wo.name)
+                    with open(save_file_path, "wb") as f:
                         f.write(up_wo.getbuffer())
-                    st.success("Đã cập nhật file Web.xlsx thành công! Hãy F5 tải lại trang.")
+                    st.success("Đã cập nhật file dữ liệu thành công! Hệ thống sẽ tự động làm mới sau giây lát.")
+                    st.rerun()
+                    
         if df_wo is not None:
             tot_wo = len(df_wo)
             cl_dong = len(df_wo[df_wo['Trạng thái'] == 'Đóng']) if 'Trạng thái' in df_wo.columns else 0
             cl_qh = int(df_wo['Quá hạn'].sum()) if 'Quá hạn' in df_wo.columns else 0
+            
             m1, m2, m3 = st.columns(3)
             m1.metric("Tổng WO hiển thị", f"{tot_wo:,}")
             m2.metric("WO Đã Đóng", f"{cl_dong:,}")
             m3.metric("WO Quá Hạn", f"{cl_qh:,}")
-            st.markdown('<hr style="border: none; height: 1px; background-color: #d90429; margin: 20px 0;">', unsafe_allow_html=True)
+            
+            st.markdown('<hr style="border: none; height: 1px; background-color: #a61c1c; margin: 20px 0;">', unsafe_allow_html=True)
             st.markdown("#### 🔍 Bộ lọc và Tra cứu chi tiết (Drill-Down)")
+            
             f1, f2, f3 = st.columns(3)
             with f1:
-                sel_tt = st.selectbox("🏢 Trung tâm:", ["Tất cả"] + sorted(df_wo['Trung tâm'].dropna().unique().tolist()))
+                tt_options = ["Tất cả"] + sorted(df_wo['Trung tâm'].dropna().unique().tolist()) if 'Trung tâm' in df_wo.columns else ["Tất cả"]
+                sel_tt = st.selectbox("🏢 Trung tâm:", tt_options)
             with f2:
-                sel_tts = st.selectbox("📌 Trạng thái WO:", ["Tất cả"] + sorted(df_wo['Trạng thái'].dropna().unique().tolist()))
+                tts_options = ["Tất cả"] + sorted(df_wo['Trạng thái'].dropna().unique().tolist()) if 'Trạng thái' in df_wo.columns else ["Tất cả"]
+                sel_tts = st.selectbox("📌 Trạng thái WO:", tts_options)
             with f3:
                 kw = st.text_input("🔎 Tìm kiếm nhanh:")
+                
             df_f = df_wo.copy()
-            if sel_tt != "Tất cả":
+            if sel_tt != "Tất cả" and 'Trung tâm' in df_f.columns:
                 df_f = df_f[df_f['Trung tâm'] == sel_tt]
-            if sel_tts != "Tất cả":
+            if sel_tts != "Tất cả" and 'Trạng thái' in df_f.columns:
                 df_f = df_f[df_f['Trạng thái'] == sel_tts]
             if kw:
                 mask = df_f.astype(str).apply(lambda x: x.str.contains(kw, case=False, na=False)).any(axis=1)
                 df_f = df_f[mask]
+                
             st.markdown(f"Đang hiển thị **{len(df_f):,}** / {len(df_wo):,} bản ghi sau khi lọc.")
             st.dataframe(df_f, use_container_width=True, height=420)
+            
             buf = io.BytesIO()
             with pd.ExcelWriter(buf, engine='openpyxl') as writer:
                 df_f.to_excel(writer, index=False, sheet_name='WO_DaLoc')
@@ -379,7 +383,7 @@ with st.container():
         else:
             st.warning("Chưa có dữ liệu Work Order.")
 
-    elif st.session_state.current_page == "💰 Dữ liệu tiền phạt":
+    elif st.session_state.current_tab == "💰 Dữ liệu tiền phạt":
         st.subheader("💰 Quản Lý & Tra Cứu Dữ Liệu Tiền Phạt")
         if st.session_state.role == "admin":
             st.markdown("#### ⚙️ Khu vực quản trị tải lên file tiền phạt")
@@ -397,8 +401,10 @@ with st.container():
                 if up_lookup is not None:
                     with open(penalty_lookup_path, "wb") as f:
                         f.write(up_lookup.getbuffer())
-                    st.success("Đã lưu file Tra cứu tiền phạt! Hãy F5 để xem.")
-            st.markdown('<hr style="border: none; height: 1px; background-color: #d90429; margin: 20px 0;">', unsafe_allow_html=True)
+                    st.success("Đã lưu file Tra cứu tiền phạt!")
+                    st.rerun()
+            st.markdown('<hr style="border: none; height: 1px; background-color: #a61c1c; margin: 20px 0;">', unsafe_allow_html=True)
+            
         st.markdown("#### 🔍 Bảng Tra Cứu Dữ Liệu Tiền Phạt Đơn Vị")
         if df_pen_lookup is not None:
             search_pen = st.text_input("🔎 Tìm kiếm thông tin phạt:")
@@ -406,7 +412,9 @@ with st.container():
             if search_pen:
                 mask_p = df_p_show.astype(str).apply(lambda x: x.str.contains(search_pen, case=False, na=False)).any(axis=1)
                 df_p_show = df_p_show[mask_p]
+                
             st.dataframe(df_p_show, use_container_width=True, height=400)
+            
             buf_p = io.BytesIO()
             with pd.ExcelWriter(buf_p, engine='openpyxl') as writer:
                 df_p_show.to_excel(writer, index=False, sheet_name='TienPhat')
@@ -414,32 +422,41 @@ with st.container():
         else:
             st.info("Chưa có file tra cứu tiền phạt được tải lên hệ thống.")
 
-    elif st.session_state.current_page == "🗂️ CSDL tổng hợp":
+    elif st.session_state.current_tab == "🗂️ CSDL tổng hợp":
         st.subheader("🗂️ Kho Lưu Trữ CSDL Tổng Hợp")
         st.caption("Quản lý tất cả các tệp cơ sở dữ liệu gốc, file tổng hợp phục vụ công tác điều hành và báo cáo.")
+        
         if st.session_state.role == "admin":
-            st.markdown("#### ⚙️ [Admin] Tải lên CSDL mới vào kho lưu trữ (Chọn nhiều file cùng lúc)")
+            st.markdown("#### ⚙️ [Admin] Tải lên CSDL mới vào kho lưu trữ")
             up_csdl_files = st.file_uploader("Chọn một hoặc nhiều file cơ sở dữ liệu (.xlsx, .csv, .zip)", type=["xlsx", "csv", "zip", "rar"], accept_multiple_files=True, key="up_csdl_files")
             if up_csdl_files:
                 for up_csdl in up_csdl_files:
                     save_path = os.path.join(CSDL_DIR, up_csdl.name)
                     with open(save_path, "wb") as f:
                         f.write(up_csdl.getbuffer())
-                st.success(f"Đã tải lên và lưu thành công **{len(up_csdl_files)}** file vào kho CSDL tổng hợp!")
+                st.success(f"Đã tải lên thành công **{len(up_csdl_files)}** file vào kho CSDL tổng hợp!")
                 st.rerun()
-        st.markdown('<hr style="border: none; height: 1px; background-color: #d90429; margin: 20px 0;">', unsafe_allow_html=True)
+                
+        st.markdown('<hr style="border: none; height: 1px; background-color: #a61c1c; margin: 20px 0;">', unsafe_allow_html=True)
         st.markdown("#### 📁 Danh sách các tệp CSDL đang lưu trữ trên hệ thống:")
         files_in_csdl = os.listdir(CSDL_DIR)
+        
         if files_in_csdl:
             for idx, file_name in enumerate(files_in_csdl):
                 file_full_path = os.path.join(CSDL_DIR, file_name)
                 file_size_kb = os.path.getsize(file_full_path) / 1024
+                
                 c_f1, c_f2, c_f3 = st.columns([3, 1, 1])
                 with c_f1:
                     st.write(f"📄 **{file_name}** `({file_size_kb:.1f} KB)`")
                 with c_f2:
                     with open(file_full_path, "rb") as f_dl:
-                        st.download_button(label="📥 Tải xuống", data=f_dl, file_name=file_name, key=f"dl_csdl_{idx}")
+                        st.download_button(
+                            label="📥 Tải xuống",
+                            data=f_dl,
+                            file_name=file_name,
+                            key=f"dl_csdl_{idx}"
+                        )
                 with c_f3:
                     if st.session_state.role == "admin":
                         if st.button("🗑️ Xóa", key=f"del_csdl_{idx}"):

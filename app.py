@@ -38,7 +38,7 @@ if "current_page" not in st.session_state:
 if "action_view" not in st.session_state:
     st.session_state.action_view = "normal"
 
-# 3. CSS Tùy chỉnh giao diện: Vùng 1 & Vùng 2 mang màu đỏ Viettel, Vùng 3 nền sáng sạch sẽ
+# 3. CSS Tùy chỉnh giao diện: Vùng 1 & Vùng 2 màu đỏ Viettel, Vùng 3 nền sáng sạch sẽ
 st.markdown("""
     <style>
     .block-container {
@@ -50,7 +50,7 @@ st.markdown("""
     [data-testid="stHeader"] {
         display: none;
     }
-    /* Tổng thể ứng dụng nền sáng trung tính */
+    /* Tổng thể ứng dụng nền sáng trung tính cho vùng nội dung */
     .stApp {
         background-color: #f4f6f9 !important;
     }
@@ -145,7 +145,7 @@ with col_h1:
     """, unsafe_allow_html=True)
 
 with col_h2:
-    # Đồng hồ chạy trực tiếp thời gian thực (Live Clock bằng JavaScript)
+    # Đồng hồ chạy trực tiếp thời gian thực bằng JavaScript theo giờ VN (UTC+7)
     clock_html = """
     <div style="text-align: center; padding-top: 6px;">
         <div id="live-clock" style="font-size: 13px; color: #ffffff; background: #a61c1c; padding: 10px 15px; border-radius: 8px; display: inline-block; font-weight: 700; box-shadow: 0 4px 8px rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.2);">
@@ -155,7 +155,6 @@ with col_h2:
     <script>
     function updateClock() {
         const now = new Date();
-        // Chỉnh sang múi giờ Việt Nam (UTC+7)
         const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
         const vnTime = new Date(utc + (3600000 * 7));
         
@@ -453,8 +452,3 @@ with st.container():
                             st.rerun()
         else:
             st.info("Kho lưu trữ CSDL tổng hợp hiện đang trống.")
-
-<ElicitationsGroup message="Anh có muốn kiểm tra hoặc bổ sung thêm tính năng nào cho giao diện này không?">
-  <Elicitation label="Tinh chỉnh kích thước bảng dữ liệu" query="Cách tùy chỉnh độ rộng và chiều cao bảng hiển thị trên Streamlit"/>
-  <Elicitation label="Thêm thông báo toast khi upload thành công" query="Cách sử dụng st.toast để hiển thị thông báo nổi khi thao tác thành công"/>
-</ElicitationsGroup>

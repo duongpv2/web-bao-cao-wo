@@ -10,8 +10,7 @@ from datetime import datetime, timezone, timedelta
 st.set_page_config(
     page_title="Điều hành WO & Quản lý CSDL - P.VHKT - CNCTHNI",
     page_icon="🔴",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
 # Thư mục lưu trữ dữ liệu
@@ -39,7 +38,7 @@ if "current_page" not in st.session_state:
 if "action_view" not in st.session_state:
     st.session_state.action_view = "normal"
 
-# 3. CSS Tùy chỉnh giao diện: Vùng 1 & Vùng 2 màu đỏ Viettel, Vùng 3 nền sáng sạch sẽ
+# 3. CSS Tùy chỉnh giao diện cao cấp
 st.markdown("""
     <style>
     .block-container {
@@ -51,29 +50,10 @@ st.markdown("""
     [data-testid="stHeader"] {
         display: none;
     }
-    /* Tổng thể ứng dụng nền sáng trung tính cho vùng nội dung */
     .stApp {
         background-color: #f4f6f9 !important;
     }
-    /* VÙNG 2: Sidebar (Menu điều hướng) mang màu đỏ Viettel đặc trưng */
-    [data-testid="stSidebar"] {
-        background-color: #a61c1c !important;
-    }
-    [data-testid="stSidebar"] * {
-        color: #ffffff !important;
-    }
-    /* Tùy chỉnh radio button trong sidebar dễ nhìn hơn */
-    [data-testid="stSidebar"] div[role="radiogroup"] label {
-        background-color: rgba(255, 255, 255, 0.1);
-        padding: 8px 12px;
-        border-radius: 6px;
-        margin-bottom: 6px;
-        transition: all 0.3s ease;
-    }
-    [data-testid="stSidebar"] div[role="radiogroup"] label:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-    }
-    /* Thẻ KPI và nội dung vùng chính */
+    /* Thẻ KPI */
     [data-testid="stMetric"] {
         background-color: #ffffff;
         border-radius: 10px;
@@ -140,7 +120,7 @@ if not st.session_state.logged_in:
 # GIAO DIỆN CHÍNH (3 VÙNG CHUẨN DOANH NGHIỆP)
 # ==========================================
 
-# --- VÙNG 1: HEADER ---
+# --- VÙNG 1: HEADER (Logo, Tên đơn vị, Đồng hồ live, Tài khoản) ---
 col_h1, col_h2, col_h3 = st.columns([2.5, 2, 1.5])
 with col_h1:
     st.markdown("""
@@ -239,25 +219,6 @@ if st.session_state.action_view == "change_pass":
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# --- VÙNG 2: SIDEBAR ---
-with st.sidebar:
-    st.markdown("""
-        <div style="text-align: center; padding: 15px 0; border-bottom: 2px solid rgba(255,255,255,0.3); margin-bottom: 15px;">
-            <span style="font-family: sans-serif; font-size: 18px; font-weight: 900; color: #ffffff;">viettel</span>
-            <span style="font-family: sans-serif; font-size: 11px; font-weight: 600; color: #ffcccc; display: block;">construction</span>
-            <h5 style="color: #ffffff; margin: 8px 0 0 0; font-weight: 800;">QUẢN LÝ ĐIỀU HÀNH</h5>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    menu_options = ["📊 Dashboard", "📋 Dữ liệu WO", "💰 Dữ liệu tiền phạt", "🗂️ CSDL tổng hợp"]
-    
-    selected_menu = st.radio(
-        "Chọn chức năng:",
-        menu_options,
-        index=menu_options.index(st.session_state.current_page) if st.session_state.current_page in menu_options else 0,
-        label_visibility="collapsed"
-    )
-    st.session_state.current_page = selected_menu
 
 # --- HÀM ĐỌC DỮ LIỆU ---
 @st.cache_data
@@ -276,8 +237,31 @@ penalty_detail_path = os.path.join(DATA_DIR, "penalty_detail.xlsx")
 df_wo = load_excel_file(wo_path, header_row=1)
 df_pen_lookup = load_excel_file(penalty_lookup_path, header_row=0)
 
-# --- VÙNG 3: HIỂN THỊ NỘI DUNG ---
-with st.container():
+
+# --- SỬ DỤNG MASTER-DETAIL LAYOUT (VÙNG 2 & VÙNG 3 CỐ ĐỊNH, KHÔNG BAO GIỜ BỊ ẨN) ---
+layout_col_sidebar, layout_col_main = st.columns([1, 4.2], gap="medium")
+
+with layout_col_sidebar:
+    st.markdown("""
+        <div style="background-color: #a61c1c; padding: 20px 15px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); text-align: center; margin-bottom: 15px;">
+            <span style="font-family: sans-serif; font-size: 18px; font-weight: 900; color: #ffffff;">viettel</span>
+            <span style="font-family: sans-serif; font-size: 11px; font-weight: 600; color: #ffcccc; display: block;">construction</span>
+            <h5 style="color: #ffffff; margin: 10px 0 0 0; font-weight: 800; font-size: 15px;">QUẢN LÝ ĐIỀU HÀNH</h5>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    menu_options = ["📊 Dashboard", "📋 Dữ liệu WO", "💰 Dữ liệu tiền phạt", "🗂️ CSDL tổng hợp"]
+    
+    selected_menu = st.radio(
+        "Chọn chức năng:",
+        menu_options,
+        index=menu_options.index(st.session_state.current_page) if st.session_state.current_page in menu_options else 0,
+        label_visibility="collapsed"
+    )
+    st.session_state.current_page = selected_menu
+
+
+with layout_col_main:
     if st.session_state.current_page == "📊 Dashboard":
         st.subheader("📊 Tổng Quan Chỉ Số Work Order & Tài Chính")
         

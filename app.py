@@ -6,7 +6,7 @@ import io
 import os
 from datetime import datetime, timezone, timedelta
 
-# 1. Cấu hình giao diện trang web toàn màn hình (Luôn mở rộng Vùng 2 mặc định)
+# 1. Cấu hình giao diện trang web toàn màn hình
 st.set_page_config(
     page_title="Điều hành WO & Quản lý CSDL - P.VHKT - CNCTHNI",
     page_icon="🔴",
@@ -20,7 +20,7 @@ CSDL_DIR = "csdl_tong_hop"
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(CSDL_DIR, exist_ok=True)
 
-# 2. Quản lý trạng thái phiên đăng nhập và điều hướng
+# 2. Quản lý trạng thái phiên đăng nhập và điều hướng (Giữ nguyên khi F5)
 if "users_db" not in st.session_state:
     st.session_state.users_db = {
         "duongpv2": {"pass": "admin123", "role": "admin", "name": "Phạm Văn Dương"},
@@ -55,7 +55,7 @@ st.markdown("""
     .stApp {
         background-color: #f4f6f9 !important;
     }
-    /* VÙNG 2: Sidebar (Menu điều hướng) mang màu đỏ Viettel đặc trưng và luôn hiển thị */
+    /* VÙNG 2: Sidebar (Menu điều hướng) mang màu đỏ Viettel đặc trưng */
     [data-testid="stSidebar"] {
         background-color: #a61c1c !important;
     }
@@ -437,3 +437,26 @@ with st.container():
             for idx, file_name in enumerate(files_in_csdl):
                 file_full_path = os.path.join(CSDL_DIR, file_name)
                 file_size_kb = os.path.getsize(file_full_path) / 1024
+                
+                c_f1, c_f2, c_f3 = st.columns([3, 1, 1])
+                with c_f1:
+                    st.write(f"📄 **{file_name}** `({file_size_kb:.1f} KB)`")
+                with c_f2:
+                    with open(file_full_path, "rb") as f_dl:
+                        st.download_button(
+                            label="📥 Tải xuống",
+                            data=f_dl,
+                            file_name=file_name,
+                            key=f"dl_csdl_{idx}"
+                        )
+                with c_f3:
+                    if st.session_state.role == "admin":
+                        if st.button("🗑️ Xóa", key=f"del_csdl_{idx}"):
+                            os.remove(file_full_path)
+                            st.success(f"Đã xóa {file_name}")
+                            st.rerun()
+        else:
+            st.info("Kho lưu trữ CSDL tổng hợp hiện đang trống.")
+
+<ElicitationsGroup>
+</ElicitationsGroup>

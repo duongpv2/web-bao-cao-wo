@@ -6,7 +6,7 @@ import io
 import os
 from datetime import datetime, timezone, timedelta
 
-# 1. Cấu hình giao diện trang web toàn màn hình (Mở rộng Vùng 2 mặc định, cho phép người dùng tự ẩn/hiện)
+# 1. Cấu hình giao diện trang web toàn màn hình (Luôn mở rộng Vùng 2 mặc định)
 st.set_page_config(
     page_title="Điều hành WO & Quản lý CSDL - P.VHKT - CNCTHNI",
     page_icon="🔴",
@@ -20,7 +20,7 @@ CSDL_DIR = "csdl_tong_hop"
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(CSDL_DIR, exist_ok=True)
 
-# 2. Quản lý trạng thái phiên đăng nhập và điều hướng (Giữ nguyên khi F5)
+# 2. Quản lý trạng thái phiên đăng nhập và điều hướng
 if "users_db" not in st.session_state:
     st.session_state.users_db = {
         "duongpv2": {"pass": "admin123", "role": "admin", "name": "Phạm Văn Dương"},
@@ -55,7 +55,7 @@ st.markdown("""
     .stApp {
         background-color: #f4f6f9 !important;
     }
-    /* VÙNG 2: Sidebar (Menu điều hướng) mang màu đỏ Viettel đặc trưng */
+    /* VÙNG 2: Sidebar (Menu điều hướng) mang màu đỏ Viettel đặc trưng và luôn hiển thị */
     [data-testid="stSidebar"] {
         background-color: #a61c1c !important;
     }
@@ -140,7 +140,7 @@ if not st.session_state.logged_in:
 # GIAO DIỆN CHÍNH (3 VÙNG CHUẨN DOANH NGHIỆP)
 # ==========================================
 
-# --- VÙNG 1: HEADER (Màu đỏ Viettel chủ đạo, Logo, Tên đơn vị, Đồng hồ chạy trực tiếp, Tài khoản) ---
+# --- VÙNG 1: HEADER ---
 col_h1, col_h2, col_h3 = st.columns([2.5, 2, 1.5])
 with col_h1:
     st.markdown("""
@@ -239,8 +239,7 @@ if st.session_state.action_view == "change_pass":
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-
-# --- VÙNG 2: SIDEBAR (Menu điều hướng nền đỏ Viettel - Người dùng có thể thu gọn/mở rộng tùy ý) ---
+# --- VÙNG 2: SIDEBAR ---
 with st.sidebar:
     st.markdown("""
         <div style="text-align: center; padding: 15px 0; border-bottom: 2px solid rgba(255,255,255,0.3); margin-bottom: 15px;">
@@ -260,7 +259,6 @@ with st.sidebar:
     )
     st.session_state.current_page = selected_menu
 
-
 # --- HÀM ĐỌC DỮ LIỆU ---
 @st.cache_data
 def load_excel_file(file_path, header_row=0):
@@ -278,9 +276,7 @@ penalty_detail_path = os.path.join(DATA_DIR, "penalty_detail.xlsx")
 df_wo = load_excel_file(wo_path, header_row=1)
 df_pen_lookup = load_excel_file(penalty_lookup_path, header_row=0)
 
-
-# --- VÙNG 3: HIỂN THỊ NỘI DUNG THEO MỤC CHỌN (Nền sáng sạch sẽ, chuyên nghiệp) ---
-
+# --- VÙNG 3: HIỂN THỊ NỘI DUNG ---
 with st.container():
     if st.session_state.current_page == "📊 Dashboard":
         st.subheader("📊 Tổng Quan Chỉ Số Work Order & Tài Chính")
@@ -328,7 +324,6 @@ with st.container():
                     st.plotly_chart(fig_p, use_container_width=True)
         else:
             st.warning("⚠️ Chưa tìm thấy tệp dữ liệu `Web.xlsx`.")
-
 
     elif st.session_state.current_page == "📋 Dữ liệu WO":
         st.subheader("📋 Dashboard Tổng Hợp & Tra Cứu Dữ Liệu Work Order (Drill-Down)")
@@ -381,7 +376,6 @@ with st.container():
         else:
             st.warning("Chưa có dữ liệu Work Order.")
 
-
     elif st.session_state.current_page == "💰 Dữ liệu tiền phạt":
         st.subheader("💰 Quản Lý & Tra Cứu Dữ Liệu Tiền Phạt")
         
@@ -421,7 +415,6 @@ with st.container():
         else:
             st.info("Chưa có file tra cứu tiền phạt được tải lên hệ thống.")
 
-
     elif st.session_state.current_page == "🗂️ CSDL tổng hợp":
         st.subheader("🗂️ Kho Lưu Trữ CSDL Tổng Hợp")
         st.caption("Quản lý tất cả các tệp cơ sở dữ liệu gốc, file tổng hợp phục vụ công tác điều hành và báo cáo.")
@@ -444,23 +437,3 @@ with st.container():
             for idx, file_name in enumerate(files_in_csdl):
                 file_full_path = os.path.join(CSDL_DIR, file_name)
                 file_size_kb = os.path.getsize(file_full_path) / 1024
-                
-                c_f1, c_f2, c_f3 = st.columns([3, 1, 1])
-                with c_f1:
-                    st.write(f"📄 **{file_name}** `({file_size_kb:.1f} KB)`")
-                with c_f2:
-                    with open(file_full_path, "rb") as f_dl:
-                        st.download_button(
-                            label="📥 Tải xuống",
-                            data=f_dl,
-                            file_name=file_name,
-                            key=f"dl_csdl_{idx}"
-                        )
-                with c_f3:
-                    if st.session_state.role == "admin":
-                        if st.button("🗑️ Xóa", key=f"del_csdl_{idx}"):
-                            os.remove(file_full_path)
-                            st.success(f"Đã xóa {file_name}")
-                            st.rerun()
-        else:
-            st.info("Kho lưu trữ CSDL tổng hợp hiện đang trống.")

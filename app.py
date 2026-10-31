@@ -1,78 +1,63 @@
 import streamlit as st
-import extra_streamlit_components as stx
+import pandas as pd
 
-st.set_page_config(page_title="Hệ thống Báo cáo WO", layout="wide")
+# Cấu hình giao diện rộng
+st.set_page_config(page_title="Báo Cáo & Tra Cứu Dữ Liệu Work Order", layout="wide")
 
-# --- QUẢN LÝ COOKIE DỂ GIỮ ĐĂNG NHẬP KHI F5 ---
-def get_manager():
-    return stx.CookieManager()
+st.markdown("## 📊 Báo Cáo & Tra Cứu Dữ Liệu Work Order")
+st.info("Trang tra cứu dữ liệu tự động từ hệ thống báo cáo.")
 
-cookie_manager = get_manager()
+# --- PHẦN 1: TẢI HOẶC ĐỌC DỮ LIỆU EXCEL ---
+# Cho phép người dùng tải file Excel báo cáo lên web
+uploaded_file = st.file_uploader("Tải lên file Excel báo cáo WO (Định dạng .xlsx hoặc .csv)", type=["xlsx", "csv"])
 
-# Đọc quyền Admin từ cookie trình duyệt
-user_role = cookie_manager.get(cookie="user_role")
-
-if "role" not in st.session_state:
-    st.session_state["role"] = user_role if user_role else "viewer"
-
-# Cập nhật session nếu cookie có giá trị
-if user_role == "admin":
-    st.session_state["role"] = "admin"
-
-# --- GIAO DIỆN MENU BÊN TRÁI ---
-st.sidebar.title("🔐 HỆ THỐNG")
-
-# 1. KHU VỰC ĐĂNG NHẬP / ĐĂNG XUẤT ADMIN
-if st.session_state["role"] != "admin":
-    with st.sidebar.expander("🔑 Đăng nhập Quản trị (Dành riêng cho Admin)"):
-        username = st.text_input("Tài khoản", key="login_user")
-        password = st.text_input("Mật khẩu", type="password", key="login_pass")
-        
-        if st.button("Đăng nhập Admin"):
-            if username == "admin" and password == "123456":  # Thay mật khẩu Admin của bạn ở đây
-                st.session_state["role"] = "admin"
-                cookie_manager.set("user_role", "admin", key="set_role")
-                st.success("Đăng nhập Admin thành công!")
-                st.rerun()
-            else:
-                st.error("Sai tài khoản hoặc mật khẩu Admin!")
-else:
-    st.sidebar.success("Xin chào: ADMIN (Quản trị viên)")
-    if st.sidebar.button("Đăng xuất Admin"):
-        st.session_state["role"] = "viewer"
-        cookie_manager.delete("user_role", key="del_role")
-        st.rerun()
-
-st.sidebar.markdown("---")
-st.sidebar.subheader("📌 CHỨC NĂNG")
-
-# 2. PHÂN QUYỀN MENU CHỨC NĂNG
-# Nếu là Admin -> Cho phép chọn cả 2 trang (Xem & Upload)
-# Nếu là User bình thường -> Chỉ hiển thị trang Xem / Tra cứu
-if st.session_state["role"] == "admin":
-    menu_list = ["📊 Dashboard & Tra Cứu", "⚙️ Quản Trị (Upload Dữ Liệu Tỉnh)"]
-else:
-    menu_list = ["📊 Dashboard & Tra Cứu"]
-
-menu_option = st.sidebar.radio("Chọn trang:", menu_list)
-
-# --- NỘI DUNG CHÍNH (BÊN PHẢI) ---
-
-if menu_option == "📊 Dashboard & Tra Cứu":
-    st.title("📈 Báo Cáo & Tra Cứu Dữ Liệu Work Order")
-    st.info("Trang tra cứu công khai cho tất cả cán bộ / nhân viên.")
-    
-    # [Đặt đoạn code hiển thị bảng/biểu đồ dữ liệu WO của bạn ở đây]
-    st.write("Dữ liệu báo cáo WO và biểu đồ KPI sẽ hiển thị tại đây cho tất cả mọi người cùng xem.")
-
-elif menu_option == "⚙️ Quản Trị (Upload Dữ Liệu Tỉnh)":
-    # Bảo vệ lớp 2: Kiểm tra lại quyền Admin trước khi hiển thị khung upload
-    if st.session_state["role"] == "admin":
-        st.title("⚙️️ Quản Trị & Upload Dữ Liệu")
-        st.warning("⚠️ Khu vực này chỉ dành cho Admin để cập nhật file Excel dữ liệu mới.")
-        
-        uploaded_file = st.file_uploader("Tải file Excel báo cáo WO mới lên:", type=["xlsx", "xls"])
-        if uploaded_file is not None:
-            st.success("Tải file báo cáo thành công! Dữ liệu trên hệ thống đã được cập nhật.")
+if uploaded_file is not None:
+    # Đọc file Excel bằng Pandas
+    if uploaded_file.name.endswith('.csv'):
+        df = pd.read_csv(uploaded_file)
     else:
-        st.error("⛔ Bạn không có quyền truy cập vào chức năng này!")
+        df = pd.read_excel(uploaded_file, engine="calamine")
+    
+    st.success(f"Đã tải thành công file dữ liệu! Tổng số dòng: {len(df):,}")
+
+    # --- PHẦN 2: TỰ ĐỘNG TÍNH TOÁN CÁC CHỈ SỐ KPI ---
+    total_wo = len(df)
+    # Ví dụ lọc các dòng quá hạn (giả sử cột trạng thái là 'Trạng thái')
+    # total_quahan = len(df[df['Trạng thái'] == 'Quá hạn'])
+    
+    # Hiển thị các khối chỉ số KPI lên web
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric(label="Tổng số lượng WO", value=f"{total_wo:,}")
+    with col2:
+        st.metric(label="WO Hoàn Thành", value="--") # Thay bằng logic tính toán thực tế của bạn
+    with col3:
+        st.metric(label="WO Quá Hạn", value="--", delta="Cần xử lý", delta_color="inverse")
+
+    st.divider()
+
+    # --- PHẦN 3: BẢNG DỮ LIỆU TRA CỨU & LỌC (DRILL-DOWN) ---
+    st.subheader("📋 Chi tiết dữ liệu Work Order")
+    
+    # Thanh tìm kiếm nhanh
+    search_keyword = st.text_input("🔍 Tìm kiếm nhanh theo mã trạm hoặc nhân viên:")
+    
+    df_display = df.copy()
+    if search_keyword:
+        # Lọc dữ liệu chứa từ khóa ở mọi cột chữ
+        mask = df_display.astype(str).apply(lambda x: x.str.contains(search_keyword, case=False)).any(axis=1)
+        df_display = df_display[mask]
+
+    # Hiển thị bảng tương tác
+    st.dataframe(df_display, use_container_width=True)
+
+    # --- PHẦN 4: NÚT TẢI XUỐNG FILE KẾT QUẢ (EXPORT EXCEL) ---
+    st.download_button(
+        label="📥 Tải xuống bảng dữ liệu đã lọc (Excel)",
+        data=df_display.to_csv(index=False).encode('utf-8-sig'),
+        file_name="BaoCao_WO_DaXuLy.csv",
+        mime="text/csv"
+    )
+
+else:
+    st.warning("⚠️ Vui lòng tải lên file Excel báo cáo ở khung bên trên để hiển thị dữ liệu và biểu đồ.")

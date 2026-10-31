@@ -39,7 +39,7 @@ if "current_page" not in st.session_state:
 if "action_view" not in st.session_state:
     st.session_state.action_view = "normal"
 
-# 3. CSS Tùy chỉnh giao diện: Vùng 2 nền đỏ Viettel, các ô có viền gạch đỏ
+# 3. CSS Tùy chỉnh giao diện: Vùng 2 nền đỏ Viettel, các khung có viền gạch đỏ
 st.markdown("""
     <style>
     .block-container {
@@ -103,8 +103,8 @@ if not st.session_state.logged_in:
     with col_l2:
         st.markdown("""
             <div style="text-align: center; margin-bottom: 20px; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 2px solid #d90429;">
-                <div style="font-family: sans-serif; font-size: 26px; font-weight: 900; color: #d90429; letter-spacing: -0.5px; line-height: 1;">VIETTEL</div>
-                <div style="font-family: sans-serif; font-size: 10px; font-weight: 700; color: #333333; letter-spacing: 4.5px; text-transform: lowercase; margin-top: 3px;">construction</div>
+                <div style="font-family: sans-serif; font-size: 30px; font-weight: 900; color: #d90429; letter-spacing: -0.5px; line-height: 1;">VIETTEL</div>
+                <div style="font-family: sans-serif; font-size: 11px; font-weight: 700; color: #333333; letter-spacing: 5px; text-transform: lowercase; margin-top: 4px;">construction</div>
                 <h4 style="color: #d90429; font-weight: 800; margin: 15px 0 2px 0;">P.VHKT - CNCTHNI</h4>
                 <p style="color: #6c757d; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Hệ thống Điều hành & Quản lý CSDL</p>
             </div>
@@ -127,43 +127,57 @@ if not st.session_state.logged_in:
                     st.rerun()
                 else:
                     st.error("⚠️ Sai tài khoản hoặc mật khẩu. Vui lòng kiểm tra lại!")
-        
         st.stop()
 
 # ==========================================
 # GIAO DIỆN CHÍNH (3 VÙNG CHUẨN DOANH NGHIỆP)
 # ==========================================
 
-# --- VÙNG 1: KHUNG TRẮNG CHẠY XUYÊN SUỐT, SẮP XẾP LOGO, ĐỒNG HỒ, TÀI KHOẢN CÙNG HÀNG ---
+# Lấy thời gian cập nhật file WO trên GitHub (dựa vào thời gian sửa file Web.xlsx)
+wo_path = "Web.xlsx"
+last_update_str = "Chưa có dữ liệu"
+if os.path.exists(wo_path):
+    m_time = os.path.getmtime(wo_path)
+    vn_timezone = timezone(timedelta(hours=7))
+    dt_update = datetime.fromtimestamp(m_time, tz=vn_timezone)
+    last_update_str = dt_update.strftime("%H:%M:%S %d/%m/%Y")
+
+# --- VÙNG 1: KHUNG TRẮNG CHẠY XUYÊN SUỐT, LOGO TO, P.VHKT GẦN HƠN, NGĂN CÁCH BẰNG GẠCH ĐỎ ---
 with st.container():
     st.markdown("""
-        <div style="background-color: #ffffff; padding: 10px 20px; border-radius: 8px; border: 1px solid #d90429; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 5px;">
+        <div style="background-color: #ffffff; padding: 12px 20px; border-radius: 8px; border: 1px solid #d90429; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 5px;">
     """, unsafe_allow_html=True)
     
-    h_col1, h_col2, h_col3, h_col4 = st.columns([1.5, 1.8, 1.5, 1.2])
+    # Chia 4 cột: Logo Viettel | P.VHKT - CNCTHNI | Đồng hồ live cỡ to | Thông tin người dùng & Cập nhật cuối
+    h_col1, h_col2, h_col3, h_col4 = st.columns([1.5, 1.8, 2.2, 1.8])
+    
     with h_col1:
         st.markdown("""
             <div style="line-height: 1.1; padding-top: 2px;">
-                <span style="font-family: sans-serif; font-size: 20px; font-weight: 900; color: #d90429; letter-spacing: -0.5px;">VIETTEL</span><br>
-                <span style="font-family: sans-serif; font-size: 9px; font-weight: 700; color: #333333; letter-spacing: 4px; text-transform: lowercase; display: inline-block; width: 100%;">construction</span>
+                <span style="font-family: sans-serif; font-size: 24px; font-weight: 900; color: #d90429; letter-spacing: -0.5px;">VIETTEL</span><br>
+                <span style="font-family: sans-serif; font-size: 10px; font-weight: 700; color: #333333; letter-spacing: 4.5px; text-transform: lowercase; display: inline-block; width: 100%;">construction</span>
             </div>
         """, unsafe_allow_html=True)
+        
     with h_col2:
-        st.markdown("""
-            <div style="padding-top: 4px; border-left: 1px solid #dee2e6; padding-left: 12px;">
+        st.markdown(f"""
+            <div style="padding-top: 2px; border-left: 2px solid #d90429; padding-left: 12px;">
                 <span style="color: #d90429; font-size: 13px; font-weight: 800;">P.VHKT - CNCTHNI</span><br>
-                <span style="color: #495057; font-size: 11px; font-weight: 600;">Điều hành WO & CSDL</span>
+                <span style="color: #495057; font-size: 11px; font-weight: 600;">Hệ thống Điều hành & CSDL</span>
             </div>
         """, unsafe_allow_html=True)
+        
     with h_col3:
-        clock_html = """
-        <div style="padding-top: 4px; text-align: center;">
-            <div id="live-clock" style="font-size: 12px; color: #212529; background: #f8f9fa; padding: 6px 12px; border-radius: 6px; display: inline-block; font-weight: 700; border: 1px solid #d90429;">
+        # Đồng hồ cỡ to hơn, đóng khung giống ô thông tin người dùng
+        clock_html = f"""
+        <div style="padding-top: 2px; text-align: center; border-left: 2px solid #d90429; padding-left: 10px;">
+            <div style="font-size: 10px; font-weight: 700; color: #6c757d; text-transform: uppercase;">Thời gian thực (UTC+7)</div>
+            <div id="live-clock" style="font-size: 14px; color: #d90429; background: #fff5f5; padding: 4px 10px; border-radius: 6px; display: inline-block; font-weight: 800; border: 1px solid #d90429; margin-top: 2px;">
                 📅 Đang đồng bộ...
             </div>
         </div>
         <script>
-        function updateClock() {
+        function updateClock() {{
             const now = new Date();
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
             const vnTime = new Date(utc + (3600000 * 7));
@@ -173,16 +187,25 @@ with st.container():
             const hours = String(vnTime.getHours()).padStart(2, '0');
             const minutes = String(vnTime.getMinutes()).padStart(2, '0');
             const seconds = String(vnTime.getSeconds()).padStart(2, '0');
-            const timeString = `📅 ${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+            const timeString = `${{day}}/${{month}}/${{year}} ${{hours}}:${{minutes}}:${{seconds}}`;
             const elem = document.getElementById('live-clock');
-            if (elem) { elem.innerText = timeString; }
-        }
+            if (elem) {{ elem.innerText = timeString; }}
+        }}
         setInterval(updateClock, 1000);
         updateClock();
         </script>
         """
-        components.html(clock_html, height=35)
+        components.html(clock_html, height=45)
+        
     with h_col4:
+        # Khung thông tin người dùng và thời gian cập nhật file cuối cùng sát cạnh nhau
+        st.markdown(f"""
+            <div style="border-left: 2px solid #d90429; padding-left: 10px; font-size: 11px; line-height: 1.3;">
+                <span style="color: #6c757d; font-weight: 600;">Cập nhật CSDL:</span><br>
+                <span style="color: #d90429; font-weight: 700;">🕒 {last_update_str}</span>
+            </div>
+        """, unsafe_allow_html=True)
+        
         role_label = "ADMIN" if st.session_state.role == "admin" else "USER"
         with st.popover(f"👤 {st.session_state.name} ({role_label})", use_container_width=True):
             st.markdown(f"**Tài khoản:** `{st.session_state.username}`")
@@ -238,8 +261,8 @@ if st.session_state.action_view == "change_pass":
 with st.sidebar:
     st.markdown("""
         <div style="text-align: center; padding: 15px 0; border-bottom: 2px solid rgba(255,255,255,0.3); margin-bottom: 15px;">
-            <div style="font-family: sans-serif; font-size: 20px; font-weight: 900; color: #ffffff; line-height: 1;">VIETTEL</div>
-            <div style="font-family: sans-serif; font-size: 9px; font-weight: 700; color: #ffcccc; letter-spacing: 4px; text-transform: lowercase; margin-top: 3px;">construction</div>
+            <div style="font-family: sans-serif; font-size: 22px; font-weight: 900; color: #ffffff; line-height: 1;">VIETTEL</div>
+            <div style="font-family: sans-serif; font-size: 10px; font-weight: 700; color: #ffcccc; letter-spacing: 4.5px; text-transform: lowercase; margin-top: 3px;">construction</div>
             <h5 style="color: #ffffff; margin: 10px 0 0 0; font-weight: 800; font-size: 14px;">QUẢN LÝ ĐIỀU HÀNH</h5>
         </div>
     """, unsafe_allow_html=True)
@@ -264,7 +287,6 @@ def load_excel_file(file_path, header_row=0):
         pass
     return None
 
-wo_path = "Web.xlsx"
 penalty_lookup_path = os.path.join(DATA_DIR, "penalty_lookup.xlsx")
 penalty_detail_path = os.path.join(DATA_DIR, "penalty_detail.xlsx")
 

@@ -6,11 +6,12 @@ import io
 import os
 from datetime import datetime, timezone, timedelta
 
-# 1. Cấu hình giao diện trang web toàn màn hình
+# 1. Cấu hình giao diện trang web toàn màn hình (Mở rộng Vùng 2 mặc định, cho phép người dùng tự ẩn/hiện)
 st.set_page_config(
     page_title="Điều hành WO & Quản lý CSDL - P.VHKT - CNCTHNI",
     page_icon="🔴",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 # Thư mục lưu trữ dữ liệu
@@ -60,6 +61,17 @@ st.markdown("""
     }
     [data-testid="stSidebar"] * {
         color: #ffffff !important;
+    }
+    /* Tùy chỉnh radio button trong sidebar dễ nhìn hơn */
+    [data-testid="stSidebar"] div[role="radiogroup"] label {
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 8px 12px;
+        border-radius: 6px;
+        margin-bottom: 6px;
+        transition: all 0.3s ease;
+    }
+    [data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+        background-color: rgba(255, 255, 255, 0.2);
     }
     /* Thẻ KPI và nội dung vùng chính */
     [data-testid="stMetric"] {
@@ -228,7 +240,7 @@ if st.session_state.action_view == "change_pass":
     st.stop()
 
 
-# --- VÙNG 2: SIDEBAR (Menu điều hướng nền đỏ Viettel) ---
+# --- VÙNG 2: SIDEBAR (Menu điều hướng nền đỏ Viettel - Người dùng có thể thu gọn/mở rộng tùy ý) ---
 with st.sidebar:
     st.markdown("""
         <div style="text-align: center; padding: 15px 0; border-bottom: 2px solid rgba(255,255,255,0.3); margin-bottom: 15px;">

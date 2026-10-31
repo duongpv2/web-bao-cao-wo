@@ -457,6 +457,3 @@ with st.container():
                             st.rerun()
         else:
             st.info("Kho lưu trữ CSDL tổng hợp hiện đang trống.")
-
-<ElicitationsGroup>
-</ElicitationsGroup>

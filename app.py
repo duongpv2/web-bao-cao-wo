@@ -60,7 +60,7 @@ st.markdown("""
         padding: 6px 12px;			/* Khoảng cách bên trong (quyết định độ dày/rộng của ô) */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);	/* Hiệu ứng bóng nổi */
         border: 1px solid #d90429 !important;		/* Độ dày và màu viền khung (1px, màu đỏ) */
-        border-left: 5px solid #d90429 !important;	/* Độ dày và màu của thanh điểm nhấn bên trái */
+        border-left: 10px solid #d90429 !important;	/* Độ dày và màu của thanh điểm nhấn bên trái */
     }
     /* Nút bấm chủ đạo màu đỏ đô */
     .stButton button[kind="primary"] {

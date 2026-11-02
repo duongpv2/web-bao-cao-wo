@@ -80,6 +80,7 @@ GH_FILE_PATH = GH.get("file_path", "Web.xlsx")
 GH_TOKEN = GH.get("token")
 GH_RAW_URL = f"https://raw.githubusercontent.com/{GH_REPO}/{GH_BRANCH}/{GH_FILE_PATH}" if GH_REPO else None
 GH_API = "https://api.github.com"
+APP_VERSION = "v5.1-20261102"   # badge kiểm tra code nào đang chạy thật trên Streamlit Cloud
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 CSDL_DIR.mkdir(parents=True, exist_ok=True)
@@ -490,7 +491,7 @@ with st.container():
                 <span style="color:{VIETTEL_RED};font-weight:700;">🕒 {last_update_str}</span>
             </div>
         """, unsafe_allow_html=True)
-        st.caption(f"📡 Nguồn: {st.session_state.data_source}")
+        st.caption(f"📡 Nguồn: {st.session_state.data_source} · 🔖 {APP_VERSION}")
         role_label = "ADMIN" if st.session_state.role == "admin" else "USER"
         with st.popover(f"👤 {st.session_state.name} ({role_label})", use_container_width=True):
             st.markdown(f"**Tài khoản:** `{st.session_state.username}`")

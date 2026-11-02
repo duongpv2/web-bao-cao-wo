@@ -327,7 +327,20 @@ st.markdown(f"""
     [data-testid="stToolbar"] {{display:none !important;}}
     #MainMenu {{visibility:hidden;}}
     footer {{visibility:hidden;}}
-    [data-testid="collapsedControl"], [data-testid="stSidebarCollapsedControl"] {{display:flex !important;visibility:visible !important;z-index:999;}}
+    /* === FORCE SIDEBAR (VÙNG 2) LUÔN HIỆN — không phụ thuộc nút thu/mở === */
+    section[data-testid="stSidebar"] {{
+        display:block !important;
+        transform:none !important;
+        visibility:visible !important;
+        opacity:1 !important;
+        width:280px !important;
+        min-width:280px !important;
+        margin-left:0 !important;
+    }}
+    div[data-testid="stSidebarCollapsedControl"],
+    div[data-testid="collapsedControl"],
+    [data-testid="stSidebarCollapsedControl"],
+    [data-testid="collapsedControl"] {{display:none !important;}}
     .stApp {{background-color:#f4f6f9 !important;}}
     [data-testid="stSidebar"] {{background-color:#a61c1c !important;border-right:2px solid {VIETTEL_RED};}}
     [data-testid="stSidebar"] * {{color:#ffffff !important;}}
@@ -338,6 +351,26 @@ st.markdown(f"""
     .stButton button[kind="primary"]:hover, [data-testid="baseButton-primary"]:hover {{background-color:{VIETTEL_RED_DARK} !important;}}
     </style>
 """, unsafe_allow_html=True)
+
+# JS tự động mở sidebar nếu đang bị thu (chạy trong trang chính, không phải iframe)
+st.markdown("""<script>
+(function(){
+  function expandSidebar(){
+    try{
+      var sb = document.querySelector('section[data-testid="stSidebar"]');
+      if(sb && sb.getAttribute('aria-expanded') !== 'true'){
+        var btn = document.querySelector('[data-testid="stSidebarCollapsedControl"] button')
+               || document.querySelector('[data-testid="stSidebarCollapsedControl"]')
+               || document.querySelector('[data-testid="collapsedControl"] button')
+               || document.querySelector('[data-testid="collapsedControl"]');
+        if(btn){ btn.click(); }
+      }
+    }catch(e){}
+  }
+  expandSidebar();
+  var n=0, t=setInterval(function(){ expandSidebar(); if(++n>10) clearInterval(t); }, 600);
+})();
+</script>""", unsafe_allow_html=True)
 
 # ======================================================================
 # 5. KHỞI TẠO SESSION STATE
@@ -475,6 +508,15 @@ with st.container():
 
 st.markdown(f'<hr style="border:none;height:3px;background-color:{VIETTEL_RED};margin:5px 0 15px 0;">', unsafe_allow_html=True)
 
+# Thanh điều hướng ngang dự phòng (luôn hiện) — đảm bảo 100% không bị kẹt trang kể cả khi sidebar có vấn đề
+MENU_OPTIONS = ["📊 Dashboard", "📋 Dữ liệu WO", "💰 Dữ liệu tiền phạt", "🗂️ CSDL tổng hợp"]
+_top_idx = MENU_OPTIONS.index(st.session_state.current_page) if st.session_state.current_page in MENU_OPTIONS else 0
+_top_nav = st.radio(
+    "Điều hướng nhanh:", MENU_OPTIONS, index=_top_idx, horizontal=True,
+    label_visibility="collapsed", key="top_nav_radio",
+)
+st.session_state.current_page = _top_nav
+
 # ======================================================================
 # 8. MÀN HÌNH ĐỔI MẬT KHẨU (đã fix: rerun sau khi thành công)
 # ======================================================================
@@ -524,10 +566,9 @@ with st.sidebar:
             <h5 style="color:#fff;margin:10px 0 0 0;font-weight:800;font-size:14px;">QUẢN LÝ ĐIỀU HÀNH</h5>
         </div>
     """, unsafe_allow_html=True)
-    menu = ["📊 Dashboard", "📋 Dữ liệu WO", "💰 Dữ liệu tiền phạt", "🗂️ CSDL tổng hợp"]
     selected = st.radio(
-        "Chọn chức năng:", menu,
-        index=menu.index(st.session_state.current_page) if st.session_state.current_page in menu else 0,
+        "Chọn chức năng:", MENU_OPTIONS,
+        index=MENU_OPTIONS.index(st.session_state.current_page) if st.session_state.current_page in MENU_OPTIONS else 0,
         label_visibility="collapsed",
     )
     st.session_state.current_page = selected

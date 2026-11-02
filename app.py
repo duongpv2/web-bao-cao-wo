@@ -323,7 +323,11 @@ st.set_page_config(
 st.markdown(f"""
     <style>
     .block-container {{padding-top:0.8rem !important;padding-bottom:2rem !important;padding-left:1.5rem !important;padding-right:1.5rem !important;}}
-    [data-testid="stHeader"] {{display:none;}}
+    [data-testid="stHeader"] {{background:transparent !important;}}
+    [data-testid="stToolbar"] {{display:none !important;}}
+    #MainMenu {{visibility:hidden;}}
+    footer {{visibility:hidden;}}
+    [data-testid="collapsedControl"], [data-testid="stSidebarCollapsedControl"] {{display:flex !important;visibility:visible !important;z-index:999;}}
     .stApp {{background-color:#f4f6f9 !important;}}
     [data-testid="stSidebar"] {{background-color:#a61c1c !important;border-right:2px solid {VIETTEL_RED};}}
     [data-testid="stSidebar"] * {{color:#ffffff !important;}}

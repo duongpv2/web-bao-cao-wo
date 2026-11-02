@@ -80,7 +80,7 @@ GH_FILE_PATH = GH.get("file_path", "Web.xlsx")
 GH_TOKEN = GH.get("token")
 GH_RAW_URL = f"https://raw.githubusercontent.com/{GH_REPO}/{GH_BRANCH}/{GH_FILE_PATH}" if GH_REPO else None
 GH_API = "https://api.github.com"
-APP_VERSION = "v5.1-20261102"   # badge kiểm tra code nào đang chạy thật trên Streamlit Cloud
+APP_VERSION = "v5.2-20261102"   # badge kiểm tra code nào đang chạy thật trên Streamlit Cloud
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 CSDL_DIR.mkdir(parents=True, exist_ok=True)
@@ -342,6 +342,9 @@ st.markdown(f"""
     div[data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"],
     [data-testid="collapsedControl"] {{display:none !important;}}
+    /* Ẩn luôn đầu sidebar (chứa nút thu ×) — người dùng KHÔNG THỂ thu sidebar */
+    [data-testid="stSidebarHeader"] {{display:none !important;}}
+    section[data-testid="stSidebar"] > div:first-child {{top:0 !important;}}
     .stApp {{background-color:#f4f6f9 !important;}}
     [data-testid="stSidebar"] {{background-color:#a61c1c !important;border-right:2px solid {VIETTEL_RED};}}
     [data-testid="stSidebar"] * {{color:#ffffff !important;}}
@@ -369,7 +372,8 @@ st.markdown("""<script>
     }catch(e){}
   }
   expandSidebar();
-  var n=0, t=setInterval(function(){ expandSidebar(); if(++n>10) clearInterval(t); }, 600);
+  // Kiểm tra vĩnh viễn mỗi 1 giây — nếu bị thu (do Streamlit/localStorage) thì tự mở lại ngay
+  setInterval(expandSidebar, 1000);
 })();
 </script>""", unsafe_allow_html=True)
 

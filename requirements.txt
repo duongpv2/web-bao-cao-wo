@@ -1,7 +1,6 @@
-streamlit
-pandas
-openpyxl
-streamlit-js-eval
-extra-streamlit-components
-python-calamine
-plotly
+streamlit>=1.31
+pandas>=2.0
+plotly>=5.0
+openpyxl>=3.1
+python-calamine>=0.2   # tùy chọn: đọc Excel nhanh, nếu thiếu sẽ tự fallback sang openpyxl
+numpy>=1.24
